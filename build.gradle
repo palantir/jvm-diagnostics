@@ -20,13 +20,25 @@ buildscript {
     }
 }
 
-apply plugin: 'com.palantir.baseline'
+apply plugin: 'com.palantir.baseline-config'
+apply plugin: 'com.palantir.baseline-circleci'
 apply plugin: 'com.palantir.git-version'
 apply plugin: 'com.palantir.consistent-versions'
 
 version System.env.CIRCLE_TAG ?: gitVersion()
 
 allprojects {
+    // Duplicate baseline defaults, excluding the release plugin
+    apply plugin: 'com.palantir.baseline-idea'
+    apply plugin: 'com.palantir.baseline-eclipse'
+    apply plugin: 'com.palantir.baseline-checkstyle'
+    apply plugin: 'com.palantir.baseline-format'
+    apply plugin: 'com.palantir.baseline-class-uniqueness'
+    apply plugin: 'com.palantir.baseline-reproducibility'
+    apply plugin: 'com.palantir.baseline-exact-dependencies'
+    apply plugin: 'com.palantir.baseline-encoding'
+    apply plugin: 'com.palantir.baseline-testing'
+
     apply plugin: 'com.palantir.java-format'
     version rootProject.version
     group 'com.palantir.jvm.diagnostics'
@@ -43,10 +55,13 @@ subprojects {
     apply plugin: 'java-library'
     apply plugin: 'com.palantir.baseline-class-uniqueness'
 
-    tasks.withType(JavaCompile) {
-        options.compilerArgs += ['-Werror']
-    }
+    tasks.checkExplicitSourceCompatibility.enabled = false
 
     tasks.check.dependsOn(javadoc)
-    sourceCompatibility = 1.8
+
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(8)
+        }
+    }
 }
