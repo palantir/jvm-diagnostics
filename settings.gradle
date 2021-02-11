@@ -1,0 +1,3 @@
+rootProject.name = 'jvm-diagnostics-root'
+
+include 'jvm-diagnostics'

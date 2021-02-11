@@ -1,0 +1,7 @@
+apply from: "$rootDir/gradle/publish-jar.gradle"
+
+dependencies {
+    // No main dependencies
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation 'org.assertj:assertj-core'
+}
