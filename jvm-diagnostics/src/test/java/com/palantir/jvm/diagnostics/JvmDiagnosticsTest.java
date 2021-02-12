@@ -25,6 +25,6 @@ class JvmDiagnosticsTest {
     @Test
     void testSafepointTime() {
         assertThat(JvmDiagnostics.totalSafepointTime().get().safepointTimeMilliseconds())
-                .isGreaterThanOrEqualTo(0L)
+                .isGreaterThanOrEqualTo(0L);
     }
 }
