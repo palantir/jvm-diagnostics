@@ -6,7 +6,13 @@ in newer java releases.
 Usage
 -----
 ```java
-
+Optional<SafepointTimeAccessor> maybeSafepointAccessor = JvmDiagnostics.totalSafepointTime();
+if (maybeSafepointAccessor.isPresent()) {
+    SafepointTimeAccessor safepointAccessor = maybeSafepointAccessor.get();
+    long safepointMillis = maybeSafepointAccessor.safepointTimeMilliseconds();
+    return safepointMillis;
+}
+return -1L;
 ```
 
 Gradle Tasks
