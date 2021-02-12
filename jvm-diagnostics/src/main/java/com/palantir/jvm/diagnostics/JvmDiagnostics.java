@@ -18,6 +18,11 @@ package com.palantir.jvm.diagnostics;
 
 import java.util.Optional;
 
+/**
+ * This utility class provides accessors to individual diagnostic getters. Every method should
+ * return an optional of an interface with a single getter method in order to provide the most
+ * flexibility if the runtime modifies or removes implementations over time.
+ */
 public final class JvmDiagnostics {
 
     /**
