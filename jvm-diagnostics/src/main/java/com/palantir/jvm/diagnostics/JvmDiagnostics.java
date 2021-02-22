@@ -36,6 +36,10 @@ public final class JvmDiagnostics {
      *
      * The resulting instance should be reused rather than calling this factory each time a
      * value is needed.
+     *
+     * Currently this supports up to java 16 assuming {@code --illegal-access=deny} is not used, and java 17+
+     * only when the {@code --illegal-access=permit} paramter is provided. Once a safe, suitable replacement is
+     * found, we will likely use a multi-release jar to leverage the new functionality.
      */
     public static Optional<SafepointTimeAccessor> totalSafepointTime() {
         try {
