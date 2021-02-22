@@ -38,7 +38,7 @@ public final class JvmDiagnostics {
      * value is needed.
      *
      * Currently this supports up to java 16 assuming {@code --illegal-access=deny} is not used, and java 17+
-     * only when the {@code --illegal-access=permit} paramter is provided. Once a safe, suitable replacement is
+     * only when the {@code --illegal-access=permit} parameter is provided. Once a safe, suitable replacement is
      * found, we will likely use a multi-release jar to leverage the new functionality.
      */
     public static Optional<SafepointTimeAccessor> totalSafepointTime() {
@@ -48,6 +48,58 @@ public final class JvmDiagnostics {
             return Optional.of(new HotspotSafepointTimeAccessor());
         } catch (Throwable t) {
             log.debug("Failed to create a HotspotSafepointTimeAccessor", t);
+            return Optional.empty();
+        }
+    }
+
+    /**
+     * Returns an {@link ThreadAllocatedBytesAccessor} which allows access to an estimate of the total number of
+     * allocated bytes. This functionality is not supported on all java runtimes, and an {@link Optional#empty()} is
+     * returned in cases thread allocation data is unavailable.
+     *
+     * The resulting instance should be reused rather than calling this factory each time a
+     * value is needed.
+     */
+    public static Optional<ThreadAllocatedBytesAccessor> threadAllocatedBytes() {
+        try {
+            HotspotThreadAllocatedBytesAccessor accessor = new HotspotThreadAllocatedBytesAccessor();
+            return accessor.isEnabled() ? Optional.of(accessor) : Optional.empty();
+        } catch (Throwable t) {
+            log.debug("Failed to create a HotspotThreadAllocatedBytesAccessor", t);
+            return Optional.empty();
+        }
+    }
+
+    /**
+     * Returns an {@link HotspotThreadUserTimeAccessor}. This functionality is not supported on all java runtimes,
+     * and an {@link Optional#empty()} is returned in cases thread allocation data is unavailable.
+     *
+     * The resulting instance should be reused rather than calling this factory each time a
+     * value is needed.
+     */
+    public static Optional<ThreadCpuTimeAccessor> threadCpuTime() {
+        try {
+            HotspotThreadCpuTimeAccessor accessor = new HotspotThreadCpuTimeAccessor();
+            return accessor.isEnabled() ? Optional.of(accessor) : Optional.empty();
+        } catch (Throwable t) {
+            log.debug("Failed to create a HotspotThreadCpuTimeAccessor", t);
+            return Optional.empty();
+        }
+    }
+
+    /**
+     * Returns an {@link HotspotThreadUserTimeAccessor}. This functionality is not supported on all java runtimes,
+     * and an {@link Optional#empty()} is returned in cases thread allocation data is unavailable.
+     *
+     * The resulting instance should be reused rather than calling this factory each time a
+     * value is needed.
+     */
+    public static Optional<ThreadUserTimeAccessor> threadUserTime() {
+        try {
+            HotspotThreadUserTimeAccessor accessor = new HotspotThreadUserTimeAccessor();
+            return accessor.isEnabled() ? Optional.of(accessor) : Optional.empty();
+        } catch (Throwable t) {
+            log.debug("Failed to create a HotspotThreadUserTimeAccessor", t);
             return Optional.empty();
         }
     }
@@ -62,6 +114,63 @@ public final class JvmDiagnostics {
         @Override
         public long safepointTimeMilliseconds() {
             return hotspotRuntimeManagementBean.getTotalSafepointTime();
+        }
+    }
+
+    private static final class HotspotThreadAllocatedBytesAccessor implements ThreadAllocatedBytesAccessor {
+
+        private final com.sun.management.ThreadMXBean hotspotThreadImpl = loadThreadManagementBean();
+
+        boolean isEnabled() {
+            return hotspotThreadImpl != null
+                    && hotspotThreadImpl.isThreadAllocatedMemorySupported()
+                    && hotspotThreadImpl.isThreadAllocatedMemoryEnabled();
+        }
+
+        @Override
+        public long getAllocatedBytes(long threadId) {
+            return hotspotThreadImpl.getThreadAllocatedBytes(threadId);
+        }
+
+        private static com.sun.management.ThreadMXBean loadThreadManagementBean() {
+            java.lang.management.ThreadMXBean threadBean = java.lang.management.ManagementFactory.getThreadMXBean();
+            return threadBean instanceof com.sun.management.ThreadMXBean
+                    ? (com.sun.management.ThreadMXBean) threadBean
+                    : null;
+        }
+    }
+
+    private static final class HotspotThreadUserTimeAccessor implements ThreadUserTimeAccessor {
+
+        private final java.lang.management.ThreadMXBean threadManagementBean =
+                java.lang.management.ManagementFactory.getThreadMXBean();
+
+        boolean isEnabled() {
+            return threadManagementBean != null
+                    && threadManagementBean.isThreadCpuTimeSupported()
+                    && threadManagementBean.isThreadCpuTimeEnabled();
+        }
+
+        @Override
+        public long getUserTimeNanoseconds(long threadId) {
+            return threadManagementBean.getThreadUserTime(threadId);
+        }
+    }
+
+    private static final class HotspotThreadCpuTimeAccessor implements ThreadCpuTimeAccessor {
+
+        private final java.lang.management.ThreadMXBean threadManagementBean =
+                java.lang.management.ManagementFactory.getThreadMXBean();
+
+        boolean isEnabled() {
+            return threadManagementBean != null
+                    && threadManagementBean.isThreadCpuTimeSupported()
+                    && threadManagementBean.isThreadCpuTimeEnabled();
+        }
+
+        @Override
+        public long getCpuTimeNanoseconds(long threadId) {
+            return threadManagementBean.getThreadCpuTime(threadId);
         }
     }
 }

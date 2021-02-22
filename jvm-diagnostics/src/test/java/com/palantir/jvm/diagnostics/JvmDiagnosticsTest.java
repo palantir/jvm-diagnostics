@@ -27,4 +27,28 @@ class JvmDiagnosticsTest {
         assertThat(JvmDiagnostics.totalSafepointTime().get().safepointTimeMilliseconds())
                 .isGreaterThanOrEqualTo(0L);
     }
+
+    @Test
+    void testThreadAllocation() {
+        assertThat(JvmDiagnostics.threadAllocatedBytes()
+                        .get()
+                        .getAllocatedBytes(Thread.currentThread().getId()))
+                .isGreaterThan(0L);
+    }
+
+    @Test
+    void testThreadCpuTime() {
+        assertThat(JvmDiagnostics.threadCpuTime()
+                        .get()
+                        .getCpuTimeNanoseconds(Thread.currentThread().getId()))
+                .isGreaterThan(0L);
+    }
+
+    @Test
+    void testThreadUserTime() {
+        assertThat(JvmDiagnostics.threadUserTime()
+                        .get()
+                        .getUserTimeNanoseconds(Thread.currentThread().getId()))
+                .isGreaterThan(0L);
+    }
 }
