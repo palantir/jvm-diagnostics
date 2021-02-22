@@ -17,6 +17,8 @@
 package com.palantir.jvm.diagnostics;
 
 import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This utility class provides accessors to individual diagnostic getters. Every method should
@@ -25,6 +27,8 @@ import java.util.Optional;
  */
 public final class JvmDiagnostics {
 
+    private static final Logger log = LoggerFactory.getLogger(JvmDiagnostics.class);
+
     /**
      * Returns an {@link SafepointTimeAccessor} which provides safepoint information. This functionality
      * is not supported on all java runtimes, and an {@link Optional#empty()} is returned in cases
@@ -32,6 +36,10 @@ public final class JvmDiagnostics {
      *
      * The resulting instance should be reused rather than calling this factory each time a
      * value is needed.
+     *
+     * Currently this supports up to java 16 assuming {@code --illegal-access=deny} is not used, and java 17+
+     * only when the {@code --illegal-access=permit} paramter is provided. Once a safe, suitable replacement is
+     * found, we will likely use a multi-release jar to leverage the new functionality.
      */
     public static Optional<SafepointTimeAccessor> totalSafepointTime() {
         try {
@@ -39,6 +47,7 @@ public final class JvmDiagnostics {
             // so we must fail gracefully.
             return Optional.of(new HotspotSafepointTimeAccessor());
         } catch (Throwable t) {
+            log.debug("Failed to create a HotspotSafepointTimeAccessor", t);
             return Optional.empty();
         }
     }

@@ -1,7 +1,9 @@
 apply from: "$rootDir/gradle/publish-jar.gradle"
 
 dependencies {
-    // No main dependencies
+    // Minimal main dependencies
+    implementation 'org.slf4j:slf4j-api'
+
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testImplementation 'org.assertj:assertj-core'
 }

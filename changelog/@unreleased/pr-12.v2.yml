@@ -1,0 +1,5 @@
+type: improvement
+improvement:
+  description: Add debug logging when diagnostics cannot be loaded
+  links:
+  - https://github.com/palantir/jvm-diagnostics/pull/12
