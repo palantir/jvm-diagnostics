@@ -1,2 +1,3 @@
+org.slf4j:* = 1.7.30
 org.junit.jupiter:* = 5.7.1
 org.assertj:assertj-core = 3.19.0

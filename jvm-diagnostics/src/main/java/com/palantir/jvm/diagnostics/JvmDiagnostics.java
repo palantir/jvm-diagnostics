@@ -17,6 +17,8 @@
 package com.palantir.jvm.diagnostics;
 
 import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This utility class provides accessors to individual diagnostic getters. Every method should
@@ -24,6 +26,8 @@ import java.util.Optional;
  * flexibility if the runtime modifies or removes implementations over time.
  */
 public final class JvmDiagnostics {
+
+    private static final Logger log = LoggerFactory.getLogger(JvmDiagnostics.class);
 
     /**
      * Returns an {@link SafepointTimeAccessor} which provides safepoint information. This functionality
@@ -39,6 +43,7 @@ public final class JvmDiagnostics {
             // so we must fail gracefully.
             return Optional.of(new HotspotSafepointTimeAccessor());
         } catch (Throwable t) {
+            log.debug("Failed to create a HotspotSafepointTimeAccessor", t);
             return Optional.empty();
         }
     }
