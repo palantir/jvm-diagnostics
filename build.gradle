@@ -20,7 +20,6 @@ buildscript {
     }
 }
 
-apply plugin: 'com.palantir.baseline'
 apply plugin: 'com.palantir.baseline-config'
 apply plugin: 'com.palantir.baseline-circleci'
 apply plugin: 'com.palantir.git-version'
