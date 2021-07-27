@@ -13,7 +13,6 @@ buildscript {
     }
 }
 
-apply plugin: 'com.palantir.baseline'
 apply plugin: 'com.palantir.external-publish'
 apply plugin: 'com.palantir.baseline-config'
 apply plugin: 'com.palantir.baseline-circleci'
