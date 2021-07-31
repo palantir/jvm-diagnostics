@@ -1,5 +1,5 @@
 # Run ./gradlew --write-locks to regenerate this file
-org.slf4j:slf4j-api:1.7.31 (1 constraints: 3e05463b)
+org.slf4j:slf4j-api:1.7.32 (1 constraints: 3f05473b)
 
 [Test dependencies]
 org.apiguardian:apiguardian-api:1.1.0 (5 constraints: 0654a8a8)
