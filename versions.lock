@@ -2,7 +2,7 @@
 org.slf4j:slf4j-api:1.7.32 (1 constraints: 3f05473b)
 
 [Test dependencies]
-org.assertj:assertj-core:3.20.2 (1 constraints: 39053b3b)
+org.assertj:assertj-core:3.21.0 (1 constraints: 38053c3b)
 org.junit:junit-bom:5.8.0 (6 constraints: 466257f9)
 org.junit.jupiter:junit-jupiter:5.8.0 (2 constraints: 220e3e59)
 org.junit.jupiter:junit-jupiter-api:5.8.0 (4 constraints: 83382e32)
