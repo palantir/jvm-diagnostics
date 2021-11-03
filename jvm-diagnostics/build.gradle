@@ -7,3 +7,11 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testImplementation 'org.assertj:assertj-core'
 }
+
+// This block may be replaced by BaselineExportsExtension exports
+// once https://github.com/gradle/gradle/issues/18824 is resolved.
+jar {
+  manifest {
+    attributes('Add-Exports': 'java.management/sun.management')
+  }
+}
