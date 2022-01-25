@@ -1,5 +1,5 @@
 # Run ./gradlew --write-locks to regenerate this file
-org.slf4j:slf4j-api:1.7.33 (1 constraints: 4005483b)
+org.slf4j:slf4j-api:1.7.35 (1 constraints: 42054a3b)
 
 [Test dependencies]
 org.assertj:assertj-core:3.22.0 (1 constraints: 39053f3b)
