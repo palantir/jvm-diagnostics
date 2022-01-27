@@ -1,0 +1,5 @@
+type: break
+break:
+  description: Library targets JDK 11 bytecode
+  links:
+  - https://github.com/palantir/jvm-diagnostics/pull/105
