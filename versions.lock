@@ -28,7 +28,7 @@ org.mockito:mockito-core:4.1.0 (2 constraints: ae1f7de3)
 org.mockito:mockito-errorprone:4.1.0 (1 constraints: fb1102f9)
 org.objenesis:objenesis:3.2 (2 constraints: 4d1c5eb4)
 org.pcollections:pcollections:2.1.2 (2 constraints: ec226a11)
-org.slf4j:slf4j-api:1.7.35 (2 constraints: 7417d757)
+org.slf4j:slf4j-api:1.7.36 (2 constraints: 75170c58)
 
 [Test dependencies]
 org.assertj:assertj-core:3.22.0 (2 constraints: 6417ed55)
