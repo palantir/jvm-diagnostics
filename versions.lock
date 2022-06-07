@@ -2,8 +2,9 @@
 org.slf4j:slf4j-api:1.7.36 (1 constraints: 43054b3b)
 
 [Test dependencies]
+net.bytebuddy:byte-buddy:1.12.10 (1 constraints: 7b0bbcea)
 org.apiguardian:apiguardian-api:1.1.2 (5 constraints: 105480ac)
-org.assertj:assertj-core:3.22.0 (1 constraints: 39053f3b)
+org.assertj:assertj-core:3.23.1 (1 constraints: 3b05433b)
 org.junit.jupiter:junit-jupiter:5.8.2 (1 constraints: 11051e36)
 org.junit.jupiter:junit-jupiter-api:5.8.2 (3 constraints: 762f77dd)
 org.junit.jupiter:junit-jupiter-engine:5.8.2 (1 constraints: 0c0edf3b)
