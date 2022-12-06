@@ -9,5 +9,5 @@ dependencies {
 }
 
 moduleJvmArgs {
-    exports 'java.management/sun.management'
+    exports 'java.management/sun.management', 'java.base/jdk.internal.platform'
 }
