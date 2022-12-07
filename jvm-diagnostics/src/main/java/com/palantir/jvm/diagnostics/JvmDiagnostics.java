@@ -108,6 +108,9 @@ public final class JvmDiagnostics {
     /**
      * Returns an {@link HotspotCpuSharesAccessor}. This functionality is not supported on all java runtimes,
      * and an {@link Optional#empty()} is returned in cases cpu share information is not supported.
+     *
+     * @see <a href="https://bugs.openjdk.org/browse/JDK-8281181">JDK-8281181</a>
+     * @see <a href="https://danluu.com/cgroup-throttling/">danluu.com/cgroup-throttling</a>
      */
     public static Optional<CpuSharesAccessor> cpuShares() {
         try {
