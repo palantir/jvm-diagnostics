@@ -17,6 +17,7 @@
 package com.palantir.jvm.diagnostics;
 
 import java.util.Optional;
+import java.util.OptionalLong;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -104,6 +105,23 @@ public final class JvmDiagnostics {
         }
     }
 
+    /**
+     * Returns an {@link HotspotCpuSharesAccessor}. This functionality is not supported on all java runtimes,
+     * and an {@link Optional#empty()} is returned in cases cpu share information is not supported.
+     *
+     * @see <a href="https://bugs.openjdk.org/browse/JDK-8281181">JDK-8281181</a>
+     * @see <a href="https://danluu.com/cgroup-throttling/">danluu.com/cgroup-throttling</a>
+     */
+    public static Optional<CpuSharesAccessor> cpuShares() {
+        try {
+            HotspotCpuSharesAccessor accessor = new HotspotCpuSharesAccessor();
+            return accessor.isEnabled() ? Optional.of(accessor) : Optional.empty();
+        } catch (Throwable t) {
+            log.debug("Failed to create a HotspotCpuSharesAccessor", t);
+            return Optional.empty();
+        }
+    }
+
     private JvmDiagnostics() {}
 
     private static final class HotspotSafepointTimeAccessor implements SafepointTimeAccessor {
@@ -171,6 +189,24 @@ public final class JvmDiagnostics {
         @Override
         public long getCpuTimeNanoseconds(long threadId) {
             return threadManagementBean.getThreadCpuTime(threadId);
+        }
+    }
+
+    private static final class HotspotCpuSharesAccessor implements CpuSharesAccessor {
+
+        private final jdk.internal.platform.Metrics metrics = jdk.internal.platform.Metrics.systemMetrics();
+
+        boolean isEnabled() {
+            return metrics.getCpuShares() != -2;
+        }
+
+        @Override
+        public OptionalLong getCpuShares() {
+            long result = metrics.getCpuShares();
+            if (result == -1) {
+                return OptionalLong.empty();
+            }
+            return OptionalLong.of(result);
         }
     }
 }

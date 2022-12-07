@@ -1,0 +1,8 @@
+type: improvement
+improvement:
+  description: |-
+    Add accessors for container CPU shares
+
+    This is difficult to test in a reasonable way.
+  links:
+  - https://github.com/palantir/jvm-diagnostics/pull/150
