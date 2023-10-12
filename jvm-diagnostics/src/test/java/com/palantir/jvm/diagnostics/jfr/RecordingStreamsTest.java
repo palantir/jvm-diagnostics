@@ -22,6 +22,8 @@ import com.palantir.jvm.diagnostics.jfr.RecordingStreams.RecordingStreamSupport;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
@@ -44,10 +46,19 @@ class RecordingStreamsTest {
         AtomicBoolean seen = new AtomicBoolean(false);
         support.get().onEvent("jdk.ActiveRecording", (_ev) -> seen.compareAndSet(false, true));
 
-        support.get().startAsync();
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        try {
+            executor.execute(() -> {
+                try (RecordingStreamSupport stream = support.get()) {
+                    stream.start();
+                }
+            });
 
-        Awaitility.waitAtMost(Duration.ofSeconds(5)).untilAsserted(() -> {
-            assertThat(seen.get()).isTrue();
-        });
+            Awaitility.waitAtMost(Duration.ofSeconds(5)).untilAsserted(() -> {
+                assertThat(seen.get()).isTrue();
+            });
+        } finally {
+            support.get().close();
+        }
     }
 }
