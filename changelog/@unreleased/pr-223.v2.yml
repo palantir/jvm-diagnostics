@@ -1,0 +1,5 @@
+type: improvement
+improvement:
+  description: runtime delegation to JFR streaming APIs via reflection
+  links:
+  - https://github.com/palantir/jvm-diagnostics/pull/223
