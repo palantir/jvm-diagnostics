@@ -139,6 +139,9 @@ public class RecordingStreams {
         void start();
 
         void startAsync();
+
+        @Override
+        void close();
     }
 
     private static Optional<Boolean> isSupported() {

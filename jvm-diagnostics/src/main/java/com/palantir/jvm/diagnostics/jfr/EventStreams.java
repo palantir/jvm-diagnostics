@@ -143,6 +143,9 @@ public class EventStreams {
         void start();
 
         void startAsync();
+
+        @Override
+        void close();
     }
 
     private static Optional<Boolean> isSupported() {
