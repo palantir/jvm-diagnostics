@@ -51,4 +51,11 @@ class JvmDiagnosticsTest {
                         .getUserTimeNanoseconds(Thread.currentThread().getId()))
                 .isGreaterThan(0L);
     }
+
+    @Test
+    void testDnsCacheTtl() {
+        assertThat(JvmDiagnostics.dnsCacheTtl().get().getPositiveSeconds()).isEqualTo(30);
+        assertThat(JvmDiagnostics.dnsCacheTtl().get().getNegativeSeconds()).isEqualTo(10);
+        assertThat(JvmDiagnostics.dnsCacheTtl().get().getStaleSeconds()).isEqualTo(0);
+    }
 }

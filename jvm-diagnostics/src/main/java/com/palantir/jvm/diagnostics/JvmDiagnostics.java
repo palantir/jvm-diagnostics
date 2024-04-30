@@ -122,6 +122,20 @@ public final class JvmDiagnostics {
         }
     }
 
+    /**
+     * Returns a {@link HotspotDnsCacheTtlAccessor}. This functionality is not supported on all java runtimes,
+     * and an {@link Optional#empty()} is returned in cases cpu share information is not supported.
+     */
+    public static Optional<DnsCacheTtlAccessor> dnsCacheTtl() {
+        try {
+            HotspotDnsCacheTtlAccessor accessor = new HotspotDnsCacheTtlAccessor();
+            return accessor.isEnabled() ? Optional.of(accessor) : Optional.empty();
+        } catch (Throwable t) {
+            log.debug("Failed to create a HotspotDnsCacheTtlAccessor", t);
+            return Optional.empty();
+        }
+    }
+
     private JvmDiagnostics() {}
 
     private static final class HotspotSafepointTimeAccessor implements SafepointTimeAccessor {
@@ -207,6 +221,45 @@ public final class JvmDiagnostics {
                 return OptionalLong.empty();
             }
             return OptionalLong.of(result);
+        }
+    }
+
+    private static final class HotspotDnsCacheTtlAccessor implements DnsCacheTtlAccessor {
+
+        boolean isEnabled() {
+            try {
+                // Ensure invocations succeed. If sufficient exports aren't present, this will throw.
+                getPositiveSeconds();
+                return true;
+            } catch (Throwable t) {
+                return false;
+            }
+        }
+
+        @Override
+        public int getPositiveSeconds() {
+            return sun.net.InetAddressCachePolicy.get();
+        }
+
+        @Override
+        public int getNegativeSeconds() {
+            return sun.net.InetAddressCachePolicy.getNegative();
+        }
+
+        @Override
+        public int getStaleSeconds() {
+            if (Runtime.version().feature() >= 21) {
+                // Introduced in Java 21 by https://bugs.openjdk.org/browse/JDK-8306653
+                try {
+                    return (Integer) sun.net.InetAddressCachePolicy.class
+                            .getMethod("getStale")
+                            .invoke(null);
+                } catch (ReflectiveOperationException roe) {
+                    log.debug("Failed to load stale InetAddressCachePolicy", roe);
+                    return 0;
+                }
+            }
+            return 0;
         }
     }
 }
