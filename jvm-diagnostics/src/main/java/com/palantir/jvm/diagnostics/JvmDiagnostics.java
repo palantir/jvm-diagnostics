@@ -126,7 +126,7 @@ public final class JvmDiagnostics {
 
     /**
      * Returns a {@link HotspotDnsCacheTtlAccessor}. This functionality is not supported on all java runtimes,
-     * and an {@link Optional#empty()} is returned in cases cpu share information is not supported.
+     * and an {@link Optional#empty()} is returned in cases TTL information is not accessible.
      */
     public static Optional<DnsCacheTtlAccessor> dnsCacheTtl() {
         try {
