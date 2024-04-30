@@ -16,8 +16,10 @@
 
 package com.palantir.jvm.diagnostics;
 
+import java.lang.reflect.Method;
 import java.util.Optional;
 import java.util.OptionalLong;
+import java.util.function.IntSupplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -122,6 +124,20 @@ public final class JvmDiagnostics {
         }
     }
 
+    /**
+     * Returns a {@link HotspotDnsCacheTtlAccessor}. This functionality is not supported on all java runtimes,
+     * and an {@link Optional#empty()} is returned in cases TTL information is not accessible.
+     */
+    public static Optional<DnsCacheTtlAccessor> dnsCacheTtl() {
+        try {
+            HotspotDnsCacheTtlAccessor accessor = new HotspotDnsCacheTtlAccessor();
+            return accessor.isEnabled() ? Optional.of(accessor) : Optional.empty();
+        } catch (Throwable t) {
+            log.debug("Failed to create a HotspotDnsCacheTtlAccessor", t);
+            return Optional.empty();
+        }
+    }
+
     private JvmDiagnostics() {}
 
     private static final class HotspotSafepointTimeAccessor implements SafepointTimeAccessor {
@@ -207,6 +223,56 @@ public final class JvmDiagnostics {
                 return OptionalLong.empty();
             }
             return OptionalLong.of(result);
+        }
+    }
+
+    private static final class HotspotDnsCacheTtlAccessor implements DnsCacheTtlAccessor {
+
+        boolean isEnabled() {
+            try {
+                // Ensure invocations succeed. If sufficient exports aren't present, this will throw.
+                getPositiveSeconds();
+                return true;
+            } catch (Throwable t) {
+                return false;
+            }
+        }
+
+        private final IntSupplier staleAccessor = createStaleAccessor();
+
+        private static IntSupplier createStaleAccessor() {
+            if (Runtime.version().feature() >= 21) {
+                // Introduced in Java 21 by https://bugs.openjdk.org/browse/JDK-8306653
+                try {
+                    Method getStale = sun.net.InetAddressCachePolicy.class.getMethod("getStale");
+                    return () -> {
+                        try {
+                            return (Integer) getStale.invoke(null);
+                        } catch (ReflectiveOperationException roe) {
+                            log.debug("Failed to load stale InetAddressCachePolicy", roe);
+                            return 0;
+                        }
+                    };
+                } catch (ReflectiveOperationException roe) {
+                    log.debug("Failed to load stale InetAddressCachePolicy", roe);
+                }
+            }
+            return () -> 0;
+        }
+
+        @Override
+        public int getPositiveSeconds() {
+            return sun.net.InetAddressCachePolicy.get();
+        }
+
+        @Override
+        public int getNegativeSeconds() {
+            return sun.net.InetAddressCachePolicy.getNegative();
+        }
+
+        @Override
+        public int getStaleSeconds() {
+            return staleAccessor.getAsInt();
         }
     }
 }

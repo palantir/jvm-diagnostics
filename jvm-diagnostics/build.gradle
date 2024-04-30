@@ -10,5 +10,8 @@ dependencies {
 }
 
 moduleJvmArgs {
-    exports 'java.management/sun.management', 'java.base/jdk.internal.platform'
+    exports 'java.management/sun.management',
+            'java.base/jdk.internal.platform',
+            // Required for access to 'sun.net.InetAddressCachePolicy' for DNS cache TTL
+            'java.base/sun.net'
 }
