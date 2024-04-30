@@ -16,8 +16,10 @@
 
 package com.palantir.jvm.diagnostics;
 
+import java.lang.reflect.Method;
 import java.util.Optional;
 import java.util.OptionalLong;
+import java.util.function.IntSupplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -236,6 +238,28 @@ public final class JvmDiagnostics {
             }
         }
 
+        private final IntSupplier staleAccessor = createStaleAccessor();
+
+        private static IntSupplier createStaleAccessor() {
+            if (Runtime.version().feature() >= 21) {
+                // Introduced in Java 21 by https://bugs.openjdk.org/browse/JDK-8306653
+                try {
+                    Method getStale = sun.net.InetAddressCachePolicy.class.getMethod("getStale");
+                    return () -> {
+                        try {
+                            return (Integer) getStale.invoke(null);
+                        } catch (ReflectiveOperationException roe) {
+                            log.debug("Failed to load stale InetAddressCachePolicy", roe);
+                            return 0;
+                        }
+                    };
+                } catch (ReflectiveOperationException roe) {
+                    log.debug("Failed to load stale InetAddressCachePolicy", roe);
+                }
+            }
+            return () -> 0;
+        }
+
         @Override
         public int getPositiveSeconds() {
             return sun.net.InetAddressCachePolicy.get();
@@ -248,18 +272,7 @@ public final class JvmDiagnostics {
 
         @Override
         public int getStaleSeconds() {
-            if (Runtime.version().feature() >= 21) {
-                // Introduced in Java 21 by https://bugs.openjdk.org/browse/JDK-8306653
-                try {
-                    return (Integer) sun.net.InetAddressCachePolicy.class
-                            .getMethod("getStale")
-                            .invoke(null);
-                } catch (ReflectiveOperationException roe) {
-                    log.debug("Failed to load stale InetAddressCachePolicy", roe);
-                    return 0;
-                }
-            }
-            return 0;
+            return staleAccessor.getAsInt();
         }
     }
 }
