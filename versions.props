@@ -1,4 +1,4 @@
 org.slf4j:* = 1.7.36
 org.junit.jupiter:* = 5.10.2
-org.assertj:assertj-core = 3.25.3
+org.assertj:assertj-core = 3.26.0
 org.awaitility:awaitility = 4.2.1
