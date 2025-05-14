@@ -1,5 +1,5 @@
 # Run ./gradlew writeVersionsLocks to regenerate this file
-org.slf4j:slf4j-api:1.7.36 (1 constraints: 43054b3b)
+org.slf4j:slf4j-api:2.0.17 (1 constraints: 3c05323b)
 
 [Test dependencies]
 net.bytebuddy:byte-buddy:1.15.11 (1 constraints: 7f0bc9ea)
