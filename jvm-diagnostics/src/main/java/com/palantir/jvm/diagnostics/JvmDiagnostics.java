@@ -149,6 +149,11 @@ public final class JvmDiagnostics {
         public long safepointTimeMilliseconds() {
             return hotspotRuntimeManagementBean.getTotalSafepointTime();
         }
+
+        @Override
+        public long safepointSyncTimeMilliseconds() {
+            return hotspotRuntimeManagementBean.getSafepointSyncTime();
+        }
     }
 
     private static final class HotspotThreadAllocatedBytesAccessor implements ThreadAllocatedBytesAccessor {
