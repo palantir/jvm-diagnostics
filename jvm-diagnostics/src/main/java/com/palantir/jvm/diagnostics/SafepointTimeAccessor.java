@@ -20,4 +20,7 @@ public interface SafepointTimeAccessor {
 
     /** Gets the total time spent at safepoints since the JVM was started, in milliseconds. */
     long safepointTimeMilliseconds();
+
+    /** Gets the total time spent getting to safepoints since the JVM was started, in milliseconds. */
+    long safepointSyncTimeMilliseconds();
 }
