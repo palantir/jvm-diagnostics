@@ -19,6 +19,8 @@ package com.palantir.jvm.diagnostics.virtualthreads;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assumptions.assumeThat;
 
+import com.palantir.jvm.diagnostics.JvmDiagnostics;
+import com.palantir.jvm.diagnostics.VirtualThreadSchedulerAccessor;
 import com.palantir.jvm.diagnostics.virtualthreads.VirtualThreadsDiagnostics.VirtualThreadSchedulerMXBeanSupport;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -53,6 +55,25 @@ class VirtualThreadsDiagnosticsTest {
         try {
             Awaitility.waitAtMost(Duration.ofSeconds(1))
                     .untilAsserted(() -> assertThat(assertThat(mxBean.get().getMountedVirtualThreadCount())
+                            .isGreaterThan(0)));
+        } finally {
+            waiter.join();
+        }
+    }
+
+    @Test
+    void testGetMountedVirtualThreadCount_jvmDiagnosticsAccessor() throws Exception {
+        assumeThat(isJdk24OrHigher()).isTrue();
+
+        Optional<VirtualThreadSchedulerAccessor> accessor = JvmDiagnostics.virtualThreadScheduler();
+        assertThat(accessor).isPresent();
+
+        VirtualThreadFactory factory = new VirtualThreadFactory();
+        BusyWaiter waiter = new BusyWaiter(factory);
+
+        try {
+            Awaitility.waitAtMost(Duration.ofSeconds(1))
+                    .untilAsserted(() -> assertThat(assertThat(accessor.get().getMountedVirtualThreadCount())
                             .isGreaterThan(0)));
         } finally {
             waiter.join();
