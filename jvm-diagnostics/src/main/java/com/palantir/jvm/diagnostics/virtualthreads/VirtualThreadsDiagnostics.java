@@ -64,7 +64,8 @@ public class VirtualThreadsDiagnostics {
         try {
             return Optional.of(new ReflectiveVirtualThreadSchedulerMXBeanSupport());
         } catch (Throwable t) {
-            log.warn("Virtual thread diagnostics support is not available", t);
+            // TODO(blaub): we could increase this to WARN once JDK24+ is more widely adopted
+            log.debug("Virtual thread diagnostics support is not available", t);
             return Optional.empty();
         }
     }
@@ -80,7 +81,7 @@ public class VirtualThreadsDiagnostics {
 
         long getQueuedVirtualThreadCount();
 
-        void setParalleism(int size);
+        void setParallelism(int size);
     }
 
     private static final class ReflectiveVirtualThreadSchedulerMXBeanSupport
@@ -156,7 +157,7 @@ public class VirtualThreadsDiagnostics {
         }
 
         @Override
-        public void setParalleism(int size) {
+        public void setParallelism(int size) {
             try {
                 mxBeanSetParallelism.invoke(inst, size);
             } catch (Throwable t) {

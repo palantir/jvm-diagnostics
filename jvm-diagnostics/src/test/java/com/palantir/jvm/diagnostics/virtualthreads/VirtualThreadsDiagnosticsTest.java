@@ -52,8 +52,8 @@ class VirtualThreadsDiagnosticsTest {
 
         try {
             Awaitility.waitAtMost(Duration.ofSeconds(1))
-                    .untilAsserted(() -> assertThat(assertThat(mxBean.get().getMountedVirtualThreadCount())
-                            .isGreaterThan(0)));
+                    .untilAsserted(() -> assertThat(mxBean.get().getMountedVirtualThreadCount())
+                            .isGreaterThan(0));
         } finally {
             waiter.join();
         }
@@ -115,7 +115,7 @@ class VirtualThreadsDiagnosticsTest {
 
         int currentParallelism = mxBean.get().getParallelism();
         try {
-            mxBean.get().setParalleism(1);
+            mxBean.get().setParallelism(1);
             VirtualThreadFactory factory = new VirtualThreadFactory();
             BusyWaiter waiter1 = new BusyWaiter(factory);
             BusyWaiter waiter2 = new BusyWaiter(factory);
@@ -128,7 +128,7 @@ class VirtualThreadsDiagnosticsTest {
                 waiter2.join();
             }
         } finally {
-            mxBean.get().setParalleism(currentParallelism);
+            mxBean.get().setParallelism(currentParallelism);
         }
     }
 
