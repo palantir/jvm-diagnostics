@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
  *     <li><a href="https://docs.oracle.com/en/java/javase/24/docs/api/jdk.management/jdk/management/VirtualThreadSchedulerMXBean.html">jdk.management.VirtualThreadSchedulerMXBean</a> (available on JDK24+)</li>
  * </ul>
  */
+@SuppressWarnings("AbbreviationAsWordInName")
 public class VirtualThreadsDiagnostics {
     private static final Logger log = LoggerFactory.getLogger(VirtualThreadsDiagnostics.class);
 
@@ -40,7 +41,8 @@ public class VirtualThreadsDiagnostics {
             maybeInitializeVirtualThreadMXBeanSupport();
 
     /**
-     * Create a VirtualThreadSchedulerMXBean, as if by calling {@code ManagementFactory.getPlatformMXBean(VirtualThreadSchedulerMXBean.class)}.
+     * Create a VirtualThreadSchedulerMXBean, as if by calling
+     * {@code ManagementFactory.getPlatformMXBean(VirtualThreadSchedulerMXBean.class)}.
      *
      * @return An {@link Optional} containing an instance of a reflective wrapper around VirtualThreadSchedulerMXBean
      * if it is available on this JVM; otherwise, {@link Optional#empty()}.
@@ -91,7 +93,7 @@ public class VirtualThreadsDiagnostics {
         private final MethodHandle mxBeanSetParallelism;
         private final Object inst;
 
-        ReflectiveVirtualThreadSchedulerMXBeanSupport() throws Throwable {
+        ReflectiveVirtualThreadSchedulerMXBeanSupport() throws ReflectiveOperationException {
             MethodHandles.Lookup lookup = MethodHandles.publicLookup();
             Class<?> mxBeanClass = lookup.findClass("jdk.management.VirtualThreadSchedulerMXBean");
             Class<?> managementFactoryClass = ManagementFactory.class;
@@ -99,7 +101,11 @@ public class VirtualThreadsDiagnostics {
                     managementFactoryClass,
                     "getPlatformMXBean",
                     MethodType.methodType(PlatformManagedObject.class, Class.class));
-            inst = managementFactoryGetPlatformMXBean.invoke(mxBeanClass);
+            try {
+                inst = managementFactoryGetPlatformMXBean.invoke(mxBeanClass);
+            } catch (Throwable t) {
+                throw new RuntimeException("failed to create VirtualThreadSchedulerMXBean", t);
+            }
 
             mxBeanGetMountedVirtualThreadCount =
                     lookup.findVirtual(mxBeanClass, "getMountedVirtualThreadCount", MethodType.methodType(int.class));
