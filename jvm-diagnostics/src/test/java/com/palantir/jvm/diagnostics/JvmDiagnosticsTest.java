@@ -177,7 +177,7 @@ class JvmDiagnosticsTest {
             }
         }
 
-        // necessary until this library is built with langauge level 21
+        // necessary until this library is built with language level 21
         private static final class VirtualThreadFactory {
             private static final MethodHandles.Lookup lookup = MethodHandles.lookup();
             private final MethodHandle threadOfVirtual;
