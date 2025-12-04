@@ -1,3 +1,7 @@
+<p align="right">
+<a href="https://autorelease.general.dmz.palantir.tech/palantir/jvm-diagnostics"><img src="https://img.shields.io/badge/Perform%20an-Autorelease-success.svg" alt="Autorelease"></a>
+</p>
+
 # jvm-diagnostics
 
 jvm-diagnostics provides helpful utilities and wrappers for getting diagnostics or profiling data from the running JVM.
