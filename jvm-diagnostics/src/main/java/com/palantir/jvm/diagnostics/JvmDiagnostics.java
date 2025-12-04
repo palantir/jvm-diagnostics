@@ -16,6 +16,11 @@
 
 package com.palantir.jvm.diagnostics;
 
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
+import java.lang.management.ManagementFactory;
+import java.lang.management.PlatformManagedObject;
 import java.lang.reflect.Method;
 import java.util.Optional;
 import java.util.OptionalLong;
@@ -74,7 +79,7 @@ public final class JvmDiagnostics {
     }
 
     /**
-     * Returns an {@link HotspotThreadUserTimeAccessor}. This functionality is not supported on all java runtimes,
+     * Returns an {@link ThreadUserTimeAccessor}. This functionality is not supported on all java runtimes,
      * and an {@link Optional#empty()} is returned in cases thread allocation data is unavailable.
      *
      * The resulting instance should be reused rather than calling this factory each time a
@@ -91,7 +96,7 @@ public final class JvmDiagnostics {
     }
 
     /**
-     * Returns an {@link HotspotThreadUserTimeAccessor}. This functionality is not supported on all java runtimes,
+     * Returns an {@link ThreadUserTimeAccessor}. This functionality is not supported on all java runtimes,
      * and an {@link Optional#empty()} is returned in cases thread allocation data is unavailable.
      *
      * The resulting instance should be reused rather than calling this factory each time a
@@ -108,7 +113,7 @@ public final class JvmDiagnostics {
     }
 
     /**
-     * Returns an {@link HotspotCpuSharesAccessor}. This functionality is not supported on all java runtimes,
+     * Returns an {@link CpuSharesAccessor}. This functionality is not supported on all java runtimes,
      * and an {@link Optional#empty()} is returned in cases cpu share information is not supported.
      *
      * @see <a href="https://bugs.openjdk.org/browse/JDK-8281181">JDK-8281181</a>
@@ -125,7 +130,7 @@ public final class JvmDiagnostics {
     }
 
     /**
-     * Returns a {@link HotspotDnsCacheTtlAccessor}. This functionality is not supported on all java runtimes,
+     * Returns a {@link DnsCacheTtlAccessor}. This functionality is not supported on all java runtimes,
      * and an {@link Optional#empty()} is returned in cases TTL information is not accessible.
      */
     public static Optional<DnsCacheTtlAccessor> dnsCacheTtl() {
@@ -134,6 +139,27 @@ public final class JvmDiagnostics {
             return accessor.isEnabled() ? Optional.of(accessor) : Optional.empty();
         } catch (Throwable t) {
             log.debug("Failed to create a HotspotDnsCacheTtlAccessor", t);
+            return Optional.empty();
+        }
+    }
+
+    /**
+     * Returns a {@link VirtualThreadSchedulerAccessor}. This functionality is not supported on all java runtimes,
+     * and an {@link Optional#empty()} is returned in cases where virtual thread scheduler metrics are not accessible.
+     *
+     * The resulting instance should be reused rather than calling this factory each time a
+     * value is needed.
+     *
+     * This is only supported on Java 24 and above.
+     *
+     * @see <a href="https://docs.oracle.com/en/java/javase/24/docs/api/jdk.management/jdk/management/VirtualThreadSchedulerMXBean.html">jdk.management.VirtualThreadSchedulerMXBean</a>
+     */
+    public static Optional<VirtualThreadSchedulerAccessor> virtualThreadScheduler() {
+        try {
+            HotspotVirtualThreadSchedulerAccessor accessor = new HotspotVirtualThreadSchedulerAccessor();
+            return accessor.isEnabled() ? Optional.of(accessor) : Optional.empty();
+        } catch (Throwable t) {
+            log.debug("Failed to create a HotspotVirtualThreadSchedulerAccessor", t);
             return Optional.empty();
         }
     }
@@ -278,6 +304,97 @@ public final class JvmDiagnostics {
         @Override
         public int getStaleSeconds() {
             return staleAccessor.getAsInt();
+        }
+    }
+
+    // this implementation must use reflection because jdk.management.VirtualThreadSchedulerMXBean is
+    // only available on jdk24+
+    private static final class HotspotVirtualThreadSchedulerAccessor implements VirtualThreadSchedulerAccessor {
+        private final MethodHandle mxBeanGetMountedVirtualThreadCount;
+        private final MethodHandle mxBeanGetParallelism;
+        private final MethodHandle mxBeanGetPoolSize;
+        private final MethodHandle mxBeanGetQueuedVirtualThreadCount;
+        private final MethodHandle mxBeanSetParallelism;
+        private final Object inst;
+
+        HotspotVirtualThreadSchedulerAccessor() throws ReflectiveOperationException {
+            MethodHandles.Lookup lookup = MethodHandles.publicLookup();
+            Class<?> mxBeanClass = lookup.findClass("jdk.management.VirtualThreadSchedulerMXBean");
+            Class<?> managementFactoryClass = ManagementFactory.class;
+            MethodHandle managementFactoryGetPlatformMxBean = lookup.findStatic(
+                    managementFactoryClass,
+                    "getPlatformMXBean",
+                    MethodType.methodType(PlatformManagedObject.class, Class.class));
+            try {
+                inst = managementFactoryGetPlatformMxBean.invoke(mxBeanClass);
+            } catch (Throwable t) {
+                throw new RuntimeException("failed to create VirtualThreadSchedulerMXBean", t);
+            }
+
+            mxBeanGetMountedVirtualThreadCount =
+                    lookup.findVirtual(mxBeanClass, "getMountedVirtualThreadCount", MethodType.methodType(int.class));
+            mxBeanGetParallelism = lookup.findVirtual(mxBeanClass, "getParallelism", MethodType.methodType(int.class));
+            mxBeanGetPoolSize = lookup.findVirtual(mxBeanClass, "getPoolSize", MethodType.methodType(int.class));
+            mxBeanGetQueuedVirtualThreadCount =
+                    lookup.findVirtual(mxBeanClass, "getQueuedVirtualThreadCount", MethodType.methodType(long.class));
+            mxBeanSetParallelism =
+                    lookup.findVirtual(mxBeanClass, "setParallelism", MethodType.methodType(void.class, int.class));
+        }
+
+        boolean isEnabled() {
+            try {
+                getParallelism();
+                return true;
+            } catch (Throwable t) {
+                return false;
+            }
+        }
+
+        @Override
+        public int getMountedVirtualThreadCount() {
+            try {
+                return (int) mxBeanGetMountedVirtualThreadCount.invoke(inst);
+            } catch (Throwable t) {
+                throw new RuntimeException(
+                        "failed to invoke VirtualThreadSchedulerMXBean#getMountedVirtualThreadCount", t);
+            }
+        }
+
+        @Override
+        public int getParallelism() {
+            try {
+                return (int) mxBeanGetParallelism.invoke(inst);
+            } catch (Throwable t) {
+                throw new RuntimeException("failed to invoke VirtualThreadSchedulerMXBean#getParallelism", t);
+            }
+        }
+
+        @Override
+        public int getPoolSize() {
+            try {
+                return (int) mxBeanGetPoolSize.invoke(inst);
+            } catch (Throwable t) {
+                throw new RuntimeException("failed to invoke VirtualThreadSchedulerMXBean#getPoolSize", t);
+            }
+        }
+
+        @Override
+        public long getQueuedVirtualThreadCount() {
+            try {
+                return (long) mxBeanGetQueuedVirtualThreadCount.invoke(inst);
+            } catch (Throwable t) {
+                throw new RuntimeException(
+                        "failed to invoke VirtualThreadSchedulerMXBean#getQueuedVirtualThreadCount", t);
+            }
+        }
+
+        @Override
+        public void setParallelism(int size) {
+            try {
+                mxBeanSetParallelism.invoke(inst, size);
+            } catch (Throwable t) {
+                throw new RuntimeException("failed to invoke VirtualThreadSchedulerMXBean#setParallelism", t);
+            }
         }
     }
 }
