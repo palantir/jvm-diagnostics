@@ -35,7 +35,6 @@ import org.slf4j.LoggerFactory;
  */
 public final class JvmDiagnostics {
 
-    @SuppressWarnings("for-rollout:PreferSafeLogger")
     private static final Logger log = LoggerFactory.getLogger(JvmDiagnostics.class);
 
     /**
@@ -314,7 +313,6 @@ public final class JvmDiagnostics {
         private final MethodHandle mxBeanSetParallelism;
         private final Object inst;
 
-        @SuppressWarnings("for-rollout:PreferSafeLoggableExceptions")
         HotspotVirtualThreadSchedulerAccessor() throws ReflectiveOperationException {
             MethodHandles.Lookup lookup = MethodHandles.publicLookup();
             Class<?> mxBeanClass = lookup.findClass("jdk.management.VirtualThreadSchedulerMXBean");
@@ -348,7 +346,6 @@ public final class JvmDiagnostics {
             }
         }
 
-        @SuppressWarnings("for-rollout:PreferSafeLoggableExceptions")
         @Override
         public int getMountedVirtualThreadCount() {
             try {
@@ -359,7 +356,6 @@ public final class JvmDiagnostics {
             }
         }
 
-        @SuppressWarnings("for-rollout:PreferSafeLoggableExceptions")
         @Override
         public int getParallelism() {
             try {
@@ -369,7 +365,6 @@ public final class JvmDiagnostics {
             }
         }
 
-        @SuppressWarnings("for-rollout:PreferSafeLoggableExceptions")
         @Override
         public int getPoolSize() {
             try {
@@ -379,7 +374,6 @@ public final class JvmDiagnostics {
             }
         }
 
-        @SuppressWarnings("for-rollout:PreferSafeLoggableExceptions")
         @Override
         public long getQueuedVirtualThreadCount() {
             try {
@@ -390,7 +384,6 @@ public final class JvmDiagnostics {
             }
         }
 
-        @SuppressWarnings("for-rollout:PreferSafeLoggableExceptions")
         @Override
         public void setParallelism(int size) {
             try {
