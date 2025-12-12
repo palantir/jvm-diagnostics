@@ -28,6 +28,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assumptions.assumeThat;
@@ -160,7 +161,7 @@ class JvmDiagnosticsTest {
             private volatile boolean done = false;
             private final Thread thread;
 
-            private long counter = 0;
+            private final AtomicLong counter = new AtomicLong(0);
 
             private BusyWaiter(VirtualThreadFactory factory) {
                 this.thread = factory.start(this);
@@ -174,7 +175,7 @@ class JvmDiagnosticsTest {
             @Override
             public void run() {
                 while (!done) {
-                    counter++;
+                    counter.incrementAndGet();
                 }
             }
         }

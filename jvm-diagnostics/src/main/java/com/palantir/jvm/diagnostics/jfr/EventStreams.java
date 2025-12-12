@@ -48,7 +48,6 @@ import org.slf4j.LoggerFactory;
  *     </a>
  */
 public final class EventStreams {
-    @SuppressWarnings("for-rollout:PreferSafeLogger")
     private static final Logger log = LoggerFactory.getLogger(EventStreams.class);
 
     private EventStreams() {}
@@ -149,7 +148,6 @@ public final class EventStreams {
         void close();
     }
 
-    @SuppressWarnings("for-rollout:Slf4jLogsafeArgs")
     private static Optional<Boolean> isSupported() {
         int featureVersion = Runtime.version().feature();
         if (featureVersion < 14) {
@@ -195,7 +193,6 @@ public final class EventStreams {
             return new ReflectiveEventStreamSupport(clazz, openRepositoryInternal(clazz, repository));
         }
 
-        @SuppressWarnings("for-rollout:PreferSafeLoggableExceptions")
         private static Object openFileInternal(Class<?> clazz, Path file) throws ReflectiveOperationException {
             MethodHandle openFile = lookup.findStatic(clazz, "openFile", MethodType.methodType(clazz, Path.class));
             try {
@@ -205,7 +202,6 @@ public final class EventStreams {
             }
         }
 
-        @SuppressWarnings("for-rollout:PreferSafeLoggableExceptions")
         private static Object openRepositoryInternal(Class<?> clazz) throws ReflectiveOperationException {
             MethodHandle openRepository = lookup.findStatic(clazz, "openRepository", MethodType.methodType(clazz));
             try {
@@ -215,7 +211,6 @@ public final class EventStreams {
             }
         }
 
-        @SuppressWarnings("for-rollout:PreferSafeLoggableExceptions")
         private static Object openRepositoryInternal(Class<?> clazz, Path repository)
                 throws ReflectiveOperationException {
             MethodHandle openRepository =
@@ -255,7 +250,6 @@ public final class EventStreams {
             eventStreamClose = lookup.findVirtual(clazz, "close", MethodType.methodType(void.class));
         }
 
-        @SuppressWarnings("for-rollout:PreferSafeLoggableExceptions")
         @Override
         public void awaitTermination() {
             try {
@@ -265,7 +259,6 @@ public final class EventStreams {
             }
         }
 
-        @SuppressWarnings("for-rollout:PreferSafeLoggableExceptions")
         @Override
         public void awaitTermination(Duration timeout) {
             try {
@@ -275,7 +268,6 @@ public final class EventStreams {
             }
         }
 
-        @SuppressWarnings("for-rollout:PreferSafeLoggableExceptions")
         @Override
         public void onClose(Runnable action) {
             try {
@@ -285,7 +277,6 @@ public final class EventStreams {
             }
         }
 
-        @SuppressWarnings("for-rollout:PreferSafeLoggableExceptions")
         @Override
         public void onError(Consumer<Throwable> action) {
             try {
@@ -295,7 +286,6 @@ public final class EventStreams {
             }
         }
 
-        @SuppressWarnings("for-rollout:PreferSafeLoggableExceptions")
         @Override
         public void onEvent(String eventName, Consumer<RecordedEvent> consumer) {
             try {
@@ -305,7 +295,6 @@ public final class EventStreams {
             }
         }
 
-        @SuppressWarnings("for-rollout:PreferSafeLoggableExceptions")
         @Override
         public void onFlush(Runnable action) {
             try {
@@ -315,7 +304,6 @@ public final class EventStreams {
             }
         }
 
-        @SuppressWarnings("for-rollout:PreferSafeLoggableExceptions")
         @Override
         public boolean remove(Object action) {
             try {
@@ -325,7 +313,6 @@ public final class EventStreams {
             }
         }
 
-        @SuppressWarnings("for-rollout:PreferSafeLoggableExceptions")
         @Override
         public void setEndTime(Instant endTime) {
             try {
@@ -335,7 +322,6 @@ public final class EventStreams {
             }
         }
 
-        @SuppressWarnings("for-rollout:PreferSafeLoggableExceptions")
         @Override
         public void setOrdered(boolean ordered) {
             try {
@@ -345,7 +331,6 @@ public final class EventStreams {
             }
         }
 
-        @SuppressWarnings("for-rollout:PreferSafeLoggableExceptions")
         @Override
         public void setReuse(boolean reuse) {
             try {
@@ -355,7 +340,6 @@ public final class EventStreams {
             }
         }
 
-        @SuppressWarnings("for-rollout:PreferSafeLoggableExceptions")
         @Override
         public void setStartTime(Instant startTime) {
             try {
@@ -365,7 +349,6 @@ public final class EventStreams {
             }
         }
 
-        @SuppressWarnings("for-rollout:PreferSafeLoggableExceptions")
         @Override
         public void start() {
             try {
@@ -375,7 +358,6 @@ public final class EventStreams {
             }
         }
 
-        @SuppressWarnings("for-rollout:PreferSafeLoggableExceptions")
         @Override
         public void startAsync() {
             try {
@@ -385,7 +367,6 @@ public final class EventStreams {
             }
         }
 
-        @SuppressWarnings("for-rollout:PreferSafeLoggableExceptions")
         @Override
         public void close() {
             try {

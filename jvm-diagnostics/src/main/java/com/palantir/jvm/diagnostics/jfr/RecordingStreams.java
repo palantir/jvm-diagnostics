@@ -48,7 +48,6 @@ import org.slf4j.LoggerFactory;
  *     </a>
  */
 public final class RecordingStreams {
-    @SuppressWarnings("for-rollout:PreferSafeLogger")
     private static final Logger log = LoggerFactory.getLogger(RecordingStreams.class);
 
     private RecordingStreams() {}
@@ -145,7 +144,6 @@ public final class RecordingStreams {
         void close();
     }
 
-    @SuppressWarnings("for-rollout:Slf4jLogsafeArgs")
     private static Optional<Boolean> isSupported() {
         int featureVersion = Runtime.version().feature();
         if (featureVersion < 14) {
@@ -184,7 +182,6 @@ public final class RecordingStreams {
         private final MethodHandle recordingStreamStartAsync;
         private final MethodHandle recordingStreamClose;
 
-        @SuppressWarnings("for-rollout:PreferSafeLoggableExceptions")
         ReflectiveRecordingStreamSupport(Configuration configuration) throws ReflectiveOperationException {
             MethodHandles.Lookup lookup = MethodHandles.publicLookup();
             Class<?> clazz = lookup.findClass("jdk.jfr.consumer.RecordingStream");
@@ -246,7 +243,6 @@ public final class RecordingStreams {
             recordingStreamClose = lookup.findVirtual(clazz, "close", MethodType.methodType(void.class));
         }
 
-        @SuppressWarnings("for-rollout:PreferSafeLoggableExceptions")
         @Override
         public void awaitTermination() {
             try {
@@ -256,7 +252,6 @@ public final class RecordingStreams {
             }
         }
 
-        @SuppressWarnings("for-rollout:PreferSafeLoggableExceptions")
         @Override
         public void awaitTermination(Duration timeout) {
             try {
@@ -266,7 +261,6 @@ public final class RecordingStreams {
             }
         }
 
-        @SuppressWarnings("for-rollout:PreferSafeLoggableExceptions")
         @Override
         public EventSettings disable(Class<? extends Event> eventClass) {
             try {
@@ -276,7 +270,6 @@ public final class RecordingStreams {
             }
         }
 
-        @SuppressWarnings("for-rollout:PreferSafeLoggableExceptions")
         @Override
         public EventSettings disable(String name) {
             try {
@@ -286,7 +279,6 @@ public final class RecordingStreams {
             }
         }
 
-        @SuppressWarnings("for-rollout:PreferSafeLoggableExceptions")
         @Override
         public void dump(Path destination) {
             try {
@@ -296,7 +288,6 @@ public final class RecordingStreams {
             }
         }
 
-        @SuppressWarnings("for-rollout:PreferSafeLoggableExceptions")
         @Override
         public EventSettings enable(Class<? extends Event> eventClass) {
             try {
@@ -306,7 +297,6 @@ public final class RecordingStreams {
             }
         }
 
-        @SuppressWarnings("for-rollout:PreferSafeLoggableExceptions")
         @Override
         public EventSettings enable(String name) {
             try {
@@ -316,7 +306,6 @@ public final class RecordingStreams {
             }
         }
 
-        @SuppressWarnings("for-rollout:PreferSafeLoggableExceptions")
         @Override
         public void onClose(Runnable action) {
             try {
@@ -326,7 +315,6 @@ public final class RecordingStreams {
             }
         }
 
-        @SuppressWarnings("for-rollout:PreferSafeLoggableExceptions")
         @Override
         public void onError(Consumer<Throwable> action) {
             try {
@@ -336,7 +324,6 @@ public final class RecordingStreams {
             }
         }
 
-        @SuppressWarnings("for-rollout:PreferSafeLoggableExceptions")
         @Override
         public void onEvent(Consumer<RecordedEvent> action) {
             try {
@@ -346,7 +333,6 @@ public final class RecordingStreams {
             }
         }
 
-        @SuppressWarnings("for-rollout:PreferSafeLoggableExceptions")
         @Override
         public void onEvent(String eventName, Consumer<RecordedEvent> consumer) {
             try {
@@ -356,7 +342,6 @@ public final class RecordingStreams {
             }
         }
 
-        @SuppressWarnings("for-rollout:PreferSafeLoggableExceptions")
         @Override
         public void onFlush(Runnable action) {
             try {
@@ -366,7 +351,6 @@ public final class RecordingStreams {
             }
         }
 
-        @SuppressWarnings("for-rollout:PreferSafeLoggableExceptions")
         @Override
         public boolean remove(Object action) {
             try {
@@ -376,7 +360,6 @@ public final class RecordingStreams {
             }
         }
 
-        @SuppressWarnings("for-rollout:PreferSafeLoggableExceptions")
         @Override
         public void setEndTime(Instant endTime) {
             try {
@@ -386,7 +369,6 @@ public final class RecordingStreams {
             }
         }
 
-        @SuppressWarnings("for-rollout:PreferSafeLoggableExceptions")
         @Override
         public void setMaxAge(Duration maxAge) {
             try {
@@ -396,7 +378,6 @@ public final class RecordingStreams {
             }
         }
 
-        @SuppressWarnings("for-rollout:PreferSafeLoggableExceptions")
         @Override
         public void setMaxSize(long maxSize) {
             try {
@@ -406,7 +387,6 @@ public final class RecordingStreams {
             }
         }
 
-        @SuppressWarnings("for-rollout:PreferSafeLoggableExceptions")
         @Override
         public void setOrdered(boolean ordered) {
             try {
@@ -416,7 +396,6 @@ public final class RecordingStreams {
             }
         }
 
-        @SuppressWarnings("for-rollout:PreferSafeLoggableExceptions")
         @Override
         public void setReuse(boolean reuse) {
             try {
@@ -426,7 +405,6 @@ public final class RecordingStreams {
             }
         }
 
-        @SuppressWarnings("for-rollout:PreferSafeLoggableExceptions")
         @Override
         public void setSettings(Map<String, String> settings) {
             try {
@@ -436,7 +414,6 @@ public final class RecordingStreams {
             }
         }
 
-        @SuppressWarnings("for-rollout:PreferSafeLoggableExceptions")
         @Override
         public void setStartTime(Instant startTime) {
             try {
@@ -446,7 +423,6 @@ public final class RecordingStreams {
             }
         }
 
-        @SuppressWarnings("for-rollout:PreferSafeLoggableExceptions")
         @Override
         public void startAsync() {
             try {
@@ -456,7 +432,6 @@ public final class RecordingStreams {
             }
         }
 
-        @SuppressWarnings("for-rollout:PreferSafeLoggableExceptions")
         @Override
         public void start() {
             try {
@@ -466,7 +441,6 @@ public final class RecordingStreams {
             }
         }
 
-        @SuppressWarnings("for-rollout:PreferSafeLoggableExceptions")
         @Override
         public void close() {
             try {
