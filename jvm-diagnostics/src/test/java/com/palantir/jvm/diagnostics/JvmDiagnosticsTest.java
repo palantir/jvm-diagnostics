@@ -26,7 +26,6 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicLong;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
@@ -160,8 +159,6 @@ class JvmDiagnosticsTest {
             private volatile boolean done = false;
             private final Thread thread;
 
-            private final AtomicLong counter = new AtomicLong(0);
-
             private BusyWaiter(VirtualThreadFactory factory) {
                 this.thread = factory.start(this);
             }
@@ -172,9 +169,11 @@ class JvmDiagnosticsTest {
             }
 
             @Override
+            @SuppressWarnings("StrictUnusedVariable")
             public void run() {
+                int counter = 0;
                 while (!done) {
-                    counter.incrementAndGet();
+                    counter++;
                 }
             }
         }
