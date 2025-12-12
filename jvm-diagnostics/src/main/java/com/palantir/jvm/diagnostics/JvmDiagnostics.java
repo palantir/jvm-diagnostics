@@ -198,12 +198,9 @@ public final class JvmDiagnostics {
             return hotspotThreadImpl.getThreadAllocatedBytes(threadId);
         }
 
-        @SuppressWarnings("for-rollout:PatternMatchingInstanceof")
         private static com.sun.management.ThreadMXBean loadThreadManagementBean() {
             java.lang.management.ThreadMXBean threadBean = ManagementFactory.getThreadMXBean();
-            return threadBean instanceof com.sun.management.ThreadMXBean
-                    ? (com.sun.management.ThreadMXBean) threadBean
-                    : null;
+            return (threadBean instanceof com.sun.management.ThreadMXBean mxBean) ? mxBean : null;
         }
     }
 

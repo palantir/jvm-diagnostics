@@ -51,6 +51,12 @@ subprojects {
     apply plugin: 'com.palantir.baseline-class-uniqueness'
 
     tasks.check.dependsOn(javadoc)
+
+    tasks.withType(JavaCompile) {
+        options.errorprone.disable 'PreferSafeLoggableExceptions'
+        options.errorprone.disable 'PreferSafeLogger'
+        options.errorprone.disable 'Slf4jLogsafeArgs'
+    }
 }
 
 jdks {
