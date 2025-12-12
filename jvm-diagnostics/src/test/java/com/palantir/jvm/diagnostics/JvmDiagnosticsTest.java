@@ -160,6 +160,8 @@ class JvmDiagnosticsTest {
             private volatile boolean done = false;
             private final Thread thread;
 
+            // Use a field to avoid triggering StrictUnusedVariable and reducing the chances that the
+            // compiler optimizes away the busy-wait loop.
             private final AtomicLong counter = new AtomicLong(0);
 
             private BusyWaiter(VirtualThreadFactory factory) {
