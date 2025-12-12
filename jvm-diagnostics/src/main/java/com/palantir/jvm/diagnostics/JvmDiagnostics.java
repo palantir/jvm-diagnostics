@@ -16,6 +16,9 @@
 
 package com.palantir.jvm.diagnostics;
 
+import com.palantir.logsafe.exceptions.SafeRuntimeException;
+import com.palantir.logsafe.logger.SafeLogger;
+import com.palantir.logsafe.logger.SafeLoggerFactory;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
@@ -25,8 +28,6 @@ import java.lang.reflect.Method;
 import java.util.Optional;
 import java.util.OptionalLong;
 import java.util.function.IntSupplier;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * This utility class provides accessors to individual diagnostic getters. Every method should
@@ -35,7 +36,7 @@ import org.slf4j.LoggerFactory;
  */
 public final class JvmDiagnostics {
 
-    private static final Logger log = LoggerFactory.getLogger(JvmDiagnostics.class);
+    private static final SafeLogger log = SafeLoggerFactory.get(JvmDiagnostics.class);
 
     /**
      * Returns an {@link SafepointTimeAccessor} which provides safepoint information. This functionality
@@ -324,7 +325,7 @@ public final class JvmDiagnostics {
             try {
                 inst = managementFactoryGetPlatformMxBean.invoke(mxBeanClass);
             } catch (Throwable t) {
-                throw new RuntimeException("failed to create VirtualThreadSchedulerMXBean", t);
+                throw new SafeRuntimeException("failed to create VirtualThreadSchedulerMXBean", t);
             }
 
             mxBeanGetMountedVirtualThreadCount =
@@ -351,7 +352,7 @@ public final class JvmDiagnostics {
             try {
                 return (int) mxBeanGetMountedVirtualThreadCount.invoke(inst);
             } catch (Throwable t) {
-                throw new RuntimeException(
+                throw new SafeRuntimeException(
                         "failed to invoke VirtualThreadSchedulerMXBean#getMountedVirtualThreadCount", t);
             }
         }
@@ -361,7 +362,7 @@ public final class JvmDiagnostics {
             try {
                 return (int) mxBeanGetParallelism.invoke(inst);
             } catch (Throwable t) {
-                throw new RuntimeException("failed to invoke VirtualThreadSchedulerMXBean#getParallelism", t);
+                throw new SafeRuntimeException("failed to invoke VirtualThreadSchedulerMXBean#getParallelism", t);
             }
         }
 
@@ -370,7 +371,7 @@ public final class JvmDiagnostics {
             try {
                 return (int) mxBeanGetPoolSize.invoke(inst);
             } catch (Throwable t) {
-                throw new RuntimeException("failed to invoke VirtualThreadSchedulerMXBean#getPoolSize", t);
+                throw new SafeRuntimeException("failed to invoke VirtualThreadSchedulerMXBean#getPoolSize", t);
             }
         }
 
@@ -379,7 +380,7 @@ public final class JvmDiagnostics {
             try {
                 return (long) mxBeanGetQueuedVirtualThreadCount.invoke(inst);
             } catch (Throwable t) {
-                throw new RuntimeException(
+                throw new SafeRuntimeException(
                         "failed to invoke VirtualThreadSchedulerMXBean#getQueuedVirtualThreadCount", t);
             }
         }
@@ -389,7 +390,7 @@ public final class JvmDiagnostics {
             try {
                 mxBeanSetParallelism.invoke(inst, size);
             } catch (Throwable t) {
-                throw new RuntimeException("failed to invoke VirtualThreadSchedulerMXBean#setParallelism", t);
+                throw new SafeRuntimeException("failed to invoke VirtualThreadSchedulerMXBean#setParallelism", t);
             }
         }
     }

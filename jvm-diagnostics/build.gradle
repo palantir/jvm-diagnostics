@@ -2,7 +2,9 @@ apply plugin: 'com.palantir.external-publish-jar'
 
 dependencies {
     // Minimal main dependencies
-    implementation 'org.slf4j:slf4j-api'
+    implementation 'com.palantir.safe-logging:logger'
+    implementation 'com.palantir.safe-logging:preconditions'
+    implementation 'com.palantir.safe-logging:safe-logging'
 
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testImplementation 'org.assertj:assertj-core'

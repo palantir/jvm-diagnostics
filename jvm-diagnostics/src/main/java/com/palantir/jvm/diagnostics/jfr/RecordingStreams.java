@@ -15,6 +15,10 @@
  */
 package com.palantir.jvm.diagnostics.jfr;
 
+import com.palantir.logsafe.SafeArg;
+import com.palantir.logsafe.exceptions.SafeRuntimeException;
+import com.palantir.logsafe.logger.SafeLogger;
+import com.palantir.logsafe.logger.SafeLoggerFactory;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
@@ -28,8 +32,6 @@ import jdk.jfr.Configuration;
 import jdk.jfr.Event;
 import jdk.jfr.EventSettings;
 import jdk.jfr.consumer.RecordedEvent;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Provides a runtime delegate wrapper around jdk.jfr.consumer.RecordingStream while allowing consumers to
@@ -48,7 +50,7 @@ import org.slf4j.LoggerFactory;
  *     </a>
  */
 public final class RecordingStreams {
-    private static final Logger log = LoggerFactory.getLogger(RecordingStreams.class);
+    private static final SafeLogger log = SafeLoggerFactory.get(RecordingStreams.class);
 
     private RecordingStreams() {}
 
@@ -149,7 +151,8 @@ public final class RecordingStreams {
         if (featureVersion < 14) {
             if (log.isDebugEnabled()) {
                 log.debug(
-                        "JFR streaming API is not available prior to jdk14; the current version is {}", featureVersion);
+                        "JFR streaming API is not available prior to jdk14; the current version is {}",
+                        SafeArg.of("featureVersion", featureVersion));
             }
             return Optional.empty();
         }
@@ -196,7 +199,7 @@ public final class RecordingStreams {
                             .invokeWithArguments();
                 }
             } catch (Throwable t) {
-                throw new RuntimeException("failed to invoke RecordingStream constructor", t);
+                throw new SafeRuntimeException("failed to invoke RecordingStream constructor", t);
             }
 
             recordingStreamAwaitTermination =
@@ -248,7 +251,7 @@ public final class RecordingStreams {
             try {
                 recordingStreamAwaitTermination.invoke(recordingStream);
             } catch (Throwable t) {
-                throw new RuntimeException("failed to invoke 'RecordingStream#awaitTermination'", t);
+                throw new SafeRuntimeException("failed to invoke 'RecordingStream#awaitTermination'", t);
             }
         }
 
@@ -257,7 +260,7 @@ public final class RecordingStreams {
             try {
                 recordingStreamAwaitTerminationWithTimeout.invoke(recordingStream, timeout);
             } catch (Throwable t) {
-                throw new RuntimeException("failed to invoke 'RecordingStream#awaitTermination'", t);
+                throw new SafeRuntimeException("failed to invoke 'RecordingStream#awaitTermination'", t);
             }
         }
 
@@ -266,7 +269,7 @@ public final class RecordingStreams {
             try {
                 return (EventSettings) recordingStreamDisableClass.invoke(recordingStream, eventClass);
             } catch (Throwable t) {
-                throw new RuntimeException("failed to invoke 'RecordingStream#disable'", t);
+                throw new SafeRuntimeException("failed to invoke 'RecordingStream#disable'", t);
             }
         }
 
@@ -275,7 +278,7 @@ public final class RecordingStreams {
             try {
                 return (EventSettings) recordingStreamDisableName.invoke(recordingStream, name);
             } catch (Throwable t) {
-                throw new RuntimeException("failed to invoke 'RecordingStream#disable'", t);
+                throw new SafeRuntimeException("failed to invoke 'RecordingStream#disable'", t);
             }
         }
 
@@ -284,7 +287,7 @@ public final class RecordingStreams {
             try {
                 recordingStreamDump.invoke(recordingStream, destination);
             } catch (Throwable t) {
-                throw new RuntimeException("failed to invoke 'RecordingStream#dump'", t);
+                throw new SafeRuntimeException("failed to invoke 'RecordingStream#dump'", t);
             }
         }
 
@@ -293,7 +296,7 @@ public final class RecordingStreams {
             try {
                 return (EventSettings) recordingStreamEnableClass.invoke(recordingStream, eventClass);
             } catch (Throwable t) {
-                throw new RuntimeException("failed to invoke 'RecordingStream#enable'", t);
+                throw new SafeRuntimeException("failed to invoke 'RecordingStream#enable'", t);
             }
         }
 
@@ -302,7 +305,7 @@ public final class RecordingStreams {
             try {
                 return (EventSettings) recordingStreamEnableName.invoke(recordingStream, name);
             } catch (Throwable t) {
-                throw new RuntimeException("failed to invoke 'RecordingStream#enable'", t);
+                throw new SafeRuntimeException("failed to invoke 'RecordingStream#enable'", t);
             }
         }
 
@@ -311,7 +314,7 @@ public final class RecordingStreams {
             try {
                 recordingStreamOnClose.invoke(recordingStream, action);
             } catch (Throwable t) {
-                throw new RuntimeException("failed to invoke 'RecordingStream#onClose'", t);
+                throw new SafeRuntimeException("failed to invoke 'RecordingStream#onClose'", t);
             }
         }
 
@@ -320,7 +323,7 @@ public final class RecordingStreams {
             try {
                 recordingStreamOnError.invoke(recordingStream, action);
             } catch (Throwable t) {
-                throw new RuntimeException("failed to invoke 'RecordingStream#onError'", t);
+                throw new SafeRuntimeException("failed to invoke 'RecordingStream#onError'", t);
             }
         }
 
@@ -329,7 +332,7 @@ public final class RecordingStreams {
             try {
                 recordingStreamOnAllEvents.invoke(recordingStream, action);
             } catch (Throwable t) {
-                throw new RuntimeException("failed to invoke 'RecordingStream#onEvent'", t);
+                throw new SafeRuntimeException("failed to invoke 'RecordingStream#onEvent'", t);
             }
         }
 
@@ -338,7 +341,7 @@ public final class RecordingStreams {
             try {
                 recordingStreamOnOneEvent.invoke(recordingStream, eventName, consumer);
             } catch (Throwable t) {
-                throw new RuntimeException("failed to invoke 'RecordingStream#onEvent'", t);
+                throw new SafeRuntimeException("failed to invoke 'RecordingStream#onEvent'", t);
             }
         }
 
@@ -347,7 +350,7 @@ public final class RecordingStreams {
             try {
                 recordingStreamOnFlush.invoke(recordingStream, action);
             } catch (Throwable t) {
-                throw new RuntimeException("failed to invoke 'RecordingStream#onFlush'", t);
+                throw new SafeRuntimeException("failed to invoke 'RecordingStream#onFlush'", t);
             }
         }
 
@@ -356,7 +359,7 @@ public final class RecordingStreams {
             try {
                 return (boolean) recordingStreamRemove.invoke(recordingStream, action);
             } catch (Throwable t) {
-                throw new RuntimeException("failed to invoke 'RecordingStream#remove'", t);
+                throw new SafeRuntimeException("failed to invoke 'RecordingStream#remove'", t);
             }
         }
 
@@ -365,7 +368,7 @@ public final class RecordingStreams {
             try {
                 recordingStreamSetEndTime.invoke(recordingStream, endTime);
             } catch (Throwable t) {
-                throw new RuntimeException("failed to invoke 'RecordingStream#setEndTime'", t);
+                throw new SafeRuntimeException("failed to invoke 'RecordingStream#setEndTime'", t);
             }
         }
 
@@ -374,7 +377,7 @@ public final class RecordingStreams {
             try {
                 recordingStreamSetMaxAge.invoke(recordingStream, maxAge);
             } catch (Throwable t) {
-                throw new RuntimeException("failed to invoke 'RecordingStream#setMaxAge'", t);
+                throw new SafeRuntimeException("failed to invoke 'RecordingStream#setMaxAge'", t);
             }
         }
 
@@ -383,7 +386,7 @@ public final class RecordingStreams {
             try {
                 recordingStreamSetMaxSize.invoke(recordingStream, maxSize);
             } catch (Throwable t) {
-                throw new RuntimeException("failed to invoke 'RecordingStream#setMaxSize'", t);
+                throw new SafeRuntimeException("failed to invoke 'RecordingStream#setMaxSize'", t);
             }
         }
 
@@ -392,7 +395,7 @@ public final class RecordingStreams {
             try {
                 recordingStreamSetOrdered.invoke(recordingStream, ordered);
             } catch (Throwable t) {
-                throw new RuntimeException("failed to invoke 'RecordingStream#setOrdered'", t);
+                throw new SafeRuntimeException("failed to invoke 'RecordingStream#setOrdered'", t);
             }
         }
 
@@ -401,7 +404,7 @@ public final class RecordingStreams {
             try {
                 recordingStreamSetReuse.invoke(recordingStream, reuse);
             } catch (Throwable t) {
-                throw new RuntimeException("failed to invoke 'RecordingStream#setReuse'", t);
+                throw new SafeRuntimeException("failed to invoke 'RecordingStream#setReuse'", t);
             }
         }
 
@@ -410,7 +413,7 @@ public final class RecordingStreams {
             try {
                 recordingStreamSetSettings.invoke(recordingStream, settings);
             } catch (Throwable t) {
-                throw new RuntimeException("failed to invoke 'RecordingStream#setSettings'", t);
+                throw new SafeRuntimeException("failed to invoke 'RecordingStream#setSettings'", t);
             }
         }
 
@@ -419,7 +422,7 @@ public final class RecordingStreams {
             try {
                 recordingStreamSetStartTime.invoke(recordingStream, startTime);
             } catch (Throwable t) {
-                throw new RuntimeException("failed to invoke 'RecordingStream#setStartTime'", t);
+                throw new SafeRuntimeException("failed to invoke 'RecordingStream#setStartTime'", t);
             }
         }
 
@@ -428,7 +431,7 @@ public final class RecordingStreams {
             try {
                 recordingStreamStartAsync.invoke(recordingStream);
             } catch (Throwable t) {
-                throw new RuntimeException("failed to invoke 'RecordingStream#startAsync'", t);
+                throw new SafeRuntimeException("failed to invoke 'RecordingStream#startAsync'", t);
             }
         }
 
@@ -437,7 +440,7 @@ public final class RecordingStreams {
             try {
                 recordingStreamStart.invoke(recordingStream);
             } catch (Throwable t) {
-                throw new RuntimeException("failed to invoke 'RecordingStream#start'", t);
+                throw new SafeRuntimeException("failed to invoke 'RecordingStream#start'", t);
             }
         }
 
@@ -446,7 +449,7 @@ public final class RecordingStreams {
             try {
                 recordingStreamClose.invoke(recordingStream);
             } catch (Throwable t) {
-                throw new RuntimeException("failed to invoke 'RecordingStream#close'", t);
+                throw new SafeRuntimeException("failed to invoke 'RecordingStream#close'", t);
             }
         }
     }

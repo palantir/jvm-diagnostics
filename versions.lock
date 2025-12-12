@@ -1,6 +1,20 @@
 # Run ./gradlew writeVersionsLocks to regenerate this file. Blank lines are to minimize merge conflicts.
 
-org.slf4j:slf4j-api:2.0.17 (1 constraints: 3c05323b)
+com.google.errorprone:error_prone_annotations:2.36.0 (4 constraints: 5f3f7667)
+
+com.palantir.safe-logging:logger:3.9.0 (1 constraints: 0e051536)
+
+com.palantir.safe-logging:logger-slf4j:3.9.0 (1 constraints: 070e6e42)
+
+com.palantir.safe-logging:logger-spi:3.9.0 (2 constraints: 1d1e0c7c)
+
+com.palantir.safe-logging:preconditions:3.9.0 (1 constraints: 0e051536)
+
+com.palantir.safe-logging:safe-logging:3.9.0 (4 constraints: 9a33d562)
+
+org.jetbrains:annotations:26.0.2 (1 constraints: 36116fd1)
+
+org.slf4j:slf4j-api:2.0.17 (1 constraints: 471091b6)
 
 
 
