@@ -170,10 +170,8 @@ class JvmDiagnosticsTest {
 
             @Override
             public void run() {
-                int counter = 0;
-                while (!done) {
-                    counter++;
-                }
+
+                while (!done) {}
             }
         }
 
