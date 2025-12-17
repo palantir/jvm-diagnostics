@@ -42,6 +42,7 @@ class JvmDiagnosticsTest {
                     .isGreaterThanOrEqualTo(0L);
         }
 
+        @SuppressWarnings("for-rollout:deprecation")
         @Test
         void testThreadAllocation() {
             assertThat(JvmDiagnostics.threadAllocatedBytes()
@@ -50,6 +51,7 @@ class JvmDiagnosticsTest {
                     .isGreaterThan(0L);
         }
 
+        @SuppressWarnings("for-rollout:deprecation")
         @Test
         void testThreadCpuTime() {
             assertThat(JvmDiagnostics.threadCpuTime()
@@ -58,6 +60,7 @@ class JvmDiagnosticsTest {
                     .isGreaterThan(0L);
         }
 
+        @SuppressWarnings("for-rollout:deprecation")
         @Test
         void testThreadUserTime() {
             assertThat(JvmDiagnostics.threadUserTime()
