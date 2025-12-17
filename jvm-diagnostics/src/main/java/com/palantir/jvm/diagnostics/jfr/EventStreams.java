@@ -15,6 +15,10 @@
  */
 package com.palantir.jvm.diagnostics.jfr;
 
+import com.palantir.logsafe.SafeArg;
+import com.palantir.logsafe.exceptions.SafeRuntimeException;
+import com.palantir.logsafe.logger.SafeLogger;
+import com.palantir.logsafe.logger.SafeLoggerFactory;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
@@ -24,8 +28,6 @@ import java.time.Instant;
 import java.util.Optional;
 import java.util.function.Consumer;
 import jdk.jfr.consumer.RecordedEvent;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Provides a runtime delegate wrapper around jdk.jfr.consumer.EventStream while allowing consumers to
@@ -48,7 +50,7 @@ import org.slf4j.LoggerFactory;
  *     </a>
  */
 public final class EventStreams {
-    private static final Logger log = LoggerFactory.getLogger(EventStreams.class);
+    private static final SafeLogger log = SafeLoggerFactory.get(EventStreams.class);
 
     private EventStreams() {}
 
@@ -153,7 +155,8 @@ public final class EventStreams {
         if (featureVersion < 14) {
             if (log.isDebugEnabled()) {
                 log.debug(
-                        "JFR streaming API is not available prior to jdk14; the current version is {}", featureVersion);
+                        "JFR streaming API is not available prior to jdk14; the current version is {}",
+                        SafeArg.of("featureVersion", featureVersion));
             }
             return Optional.empty();
         }
@@ -198,7 +201,7 @@ public final class EventStreams {
             try {
                 return openFile.invoke(file);
             } catch (Throwable t) {
-                throw new RuntimeException("failed to invoke 'EventStream#openFile'", t);
+                throw new SafeRuntimeException("failed to invoke 'EventStream#openFile'", t);
             }
         }
 
@@ -207,7 +210,7 @@ public final class EventStreams {
             try {
                 return openRepository.invokeWithArguments();
             } catch (Throwable t) {
-                throw new RuntimeException("failed to invoke 'EventStream#openRepository'", t);
+                throw new SafeRuntimeException("failed to invoke 'EventStream#openRepository'", t);
             }
         }
 
@@ -218,7 +221,7 @@ public final class EventStreams {
             try {
                 return openRepository.invoke(repository);
             } catch (Throwable t) {
-                throw new RuntimeException("failed to invoke 'EventStream#openRepository'", t);
+                throw new SafeRuntimeException("failed to invoke 'EventStream#openRepository'", t);
             }
         }
 
@@ -255,7 +258,7 @@ public final class EventStreams {
             try {
                 eventStreamAwaitTermination.invoke(eventStream);
             } catch (Throwable t) {
-                throw new RuntimeException("failed to invoke 'EventStream#awaitTermination'", t);
+                throw new SafeRuntimeException("failed to invoke 'EventStream#awaitTermination'", t);
             }
         }
 
@@ -264,7 +267,7 @@ public final class EventStreams {
             try {
                 eventStreamAwaitTerminationWithTimeout.invoke(eventStream, timeout);
             } catch (Throwable t) {
-                throw new RuntimeException("failed to invoke 'EventStream#awaitTermination'", t);
+                throw new SafeRuntimeException("failed to invoke 'EventStream#awaitTermination'", t);
             }
         }
 
@@ -273,7 +276,7 @@ public final class EventStreams {
             try {
                 eventStreamOnClose.invoke(eventStream, action);
             } catch (Throwable t) {
-                throw new RuntimeException("failed to invoke 'EventStream#onClose'", t);
+                throw new SafeRuntimeException("failed to invoke 'EventStream#onClose'", t);
             }
         }
 
@@ -282,7 +285,7 @@ public final class EventStreams {
             try {
                 eventStreamOnError.invoke(eventStream, action);
             } catch (Throwable t) {
-                throw new RuntimeException("failed to invoke 'EventStream#onError'", t);
+                throw new SafeRuntimeException("failed to invoke 'EventStream#onError'", t);
             }
         }
 
@@ -291,7 +294,7 @@ public final class EventStreams {
             try {
                 eventStreamOnEvent.invoke(eventStream, eventName, consumer);
             } catch (Throwable t) {
-                throw new RuntimeException("failed to invoke 'EventStream#onEvent'", t);
+                throw new SafeRuntimeException("failed to invoke 'EventStream#onEvent'", t);
             }
         }
 
@@ -300,7 +303,7 @@ public final class EventStreams {
             try {
                 eventStreamOnFlush.invoke(eventStream, action);
             } catch (Throwable t) {
-                throw new RuntimeException("failed to invoke 'EventStream#onFlush'", t);
+                throw new SafeRuntimeException("failed to invoke 'EventStream#onFlush'", t);
             }
         }
 
@@ -309,7 +312,7 @@ public final class EventStreams {
             try {
                 return (boolean) eventStreamRemove.invoke(eventStream, action);
             } catch (Throwable t) {
-                throw new RuntimeException("failed to invoke 'EventStream#remove'", t);
+                throw new SafeRuntimeException("failed to invoke 'EventStream#remove'", t);
             }
         }
 
@@ -318,7 +321,7 @@ public final class EventStreams {
             try {
                 eventStreamSetEndTime.invoke(eventStream, endTime);
             } catch (Throwable t) {
-                throw new RuntimeException("failed to invoke 'EventStream#setEndTime'", t);
+                throw new SafeRuntimeException("failed to invoke 'EventStream#setEndTime'", t);
             }
         }
 
@@ -327,7 +330,7 @@ public final class EventStreams {
             try {
                 eventStreamSetOrdered.invoke(eventStream, ordered);
             } catch (Throwable t) {
-                throw new RuntimeException("failed to invoke 'EventStream#setOrdered'", t);
+                throw new SafeRuntimeException("failed to invoke 'EventStream#setOrdered'", t);
             }
         }
 
@@ -336,7 +339,7 @@ public final class EventStreams {
             try {
                 eventStreamSetReuse.invoke(eventStream, reuse);
             } catch (Throwable t) {
-                throw new RuntimeException("failed to invoke 'EventStream#setReuse'", t);
+                throw new SafeRuntimeException("failed to invoke 'EventStream#setReuse'", t);
             }
         }
 
@@ -345,7 +348,7 @@ public final class EventStreams {
             try {
                 eventStreamSetStartTime.invoke(eventStream, startTime);
             } catch (Throwable t) {
-                throw new RuntimeException("failed to invoke 'EventStream#setStartTime'", t);
+                throw new SafeRuntimeException("failed to invoke 'EventStream#setStartTime'", t);
             }
         }
 
@@ -354,7 +357,7 @@ public final class EventStreams {
             try {
                 eventStreamStart.invoke(eventStream);
             } catch (Throwable t) {
-                throw new RuntimeException("failed to invoke 'EventStream#start'", t);
+                throw new SafeRuntimeException("failed to invoke 'EventStream#start'", t);
             }
         }
 
@@ -363,7 +366,7 @@ public final class EventStreams {
             try {
                 eventStreamStartAsync.invoke(eventStream);
             } catch (Throwable t) {
-                throw new RuntimeException("failed to invoke 'EventStream#startAsync'", t);
+                throw new SafeRuntimeException("failed to invoke 'EventStream#startAsync'", t);
             }
         }
 
@@ -372,7 +375,7 @@ public final class EventStreams {
             try {
                 eventStreamClose.invoke(eventStream);
             } catch (Throwable t) {
-                throw new RuntimeException("failed to invoke 'EventStream#close'", t);
+                throw new SafeRuntimeException("failed to invoke 'EventStream#close'", t);
             }
         }
     }
