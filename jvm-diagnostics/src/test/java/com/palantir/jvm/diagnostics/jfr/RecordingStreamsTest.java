@@ -44,7 +44,7 @@ class RecordingStreamsTest {
         support.get().enable("jdk.ActiveRecording");
 
         AtomicBoolean seen = new AtomicBoolean(false);
-        support.get().onEvent("jdk.ActiveRecording", (_ev) -> seen.compareAndSet(false, true));
+        support.get().onEvent("jdk.ActiveRecording", _ev -> seen.compareAndSet(false, true));
 
         ExecutorService executor = Executors.newSingleThreadExecutor();
         try {

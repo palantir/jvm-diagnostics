@@ -47,7 +47,7 @@ import org.slf4j.LoggerFactory;
  *     jdk.jfr.consumer.RecordingStream
  *     </a>
  */
-public class RecordingStreams {
+public final class RecordingStreams {
     private static final Logger log = LoggerFactory.getLogger(RecordingStreams.class);
 
     private RecordingStreams() {}

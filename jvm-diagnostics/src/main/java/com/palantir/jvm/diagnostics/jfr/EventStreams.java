@@ -47,7 +47,7 @@ import org.slf4j.LoggerFactory;
  *     jdk.jfr.consumer.EventStream
  *     </a>
  */
-public class EventStreams {
+public final class EventStreams {
     private static final Logger log = LoggerFactory.getLogger(EventStreams.class);
 
     private EventStreams() {}

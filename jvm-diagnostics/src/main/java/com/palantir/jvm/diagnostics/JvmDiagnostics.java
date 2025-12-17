@@ -198,17 +198,14 @@ public final class JvmDiagnostics {
         }
 
         private static com.sun.management.ThreadMXBean loadThreadManagementBean() {
-            java.lang.management.ThreadMXBean threadBean = java.lang.management.ManagementFactory.getThreadMXBean();
-            return threadBean instanceof com.sun.management.ThreadMXBean
-                    ? (com.sun.management.ThreadMXBean) threadBean
-                    : null;
+            java.lang.management.ThreadMXBean threadBean = ManagementFactory.getThreadMXBean();
+            return (threadBean instanceof com.sun.management.ThreadMXBean mxBean) ? mxBean : null;
         }
     }
 
     private static final class HotspotThreadUserTimeAccessor implements ThreadUserTimeAccessor {
 
-        private final java.lang.management.ThreadMXBean threadManagementBean =
-                java.lang.management.ManagementFactory.getThreadMXBean();
+        private final java.lang.management.ThreadMXBean threadManagementBean = ManagementFactory.getThreadMXBean();
 
         boolean isEnabled() {
             return threadManagementBean != null
@@ -224,8 +221,7 @@ public final class JvmDiagnostics {
 
     private static final class HotspotThreadCpuTimeAccessor implements ThreadCpuTimeAccessor {
 
-        private final java.lang.management.ThreadMXBean threadManagementBean =
-                java.lang.management.ManagementFactory.getThreadMXBean();
+        private final java.lang.management.ThreadMXBean threadManagementBean = ManagementFactory.getThreadMXBean();
 
         boolean isEnabled() {
             return threadManagementBean != null
