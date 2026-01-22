@@ -2,15 +2,15 @@
 
 com.google.errorprone:error_prone_annotations:2.3.3 (4 constraints: 933e0795)
 
-com.palantir.safe-logging:logger:3.10.0 (1 constraints: 3605353b)
+com.palantir.safe-logging:logger:3.11.0 (1 constraints: 3705383b)
 
-com.palantir.safe-logging:logger-slf4j:3.10.0 (1 constraints: 2f0e8750)
+com.palantir.safe-logging:logger-slf4j:3.11.0 (1 constraints: 300e8a50)
 
-com.palantir.safe-logging:logger-spi:3.10.0 (2 constraints: 6d1ed4af)
+com.palantir.safe-logging:logger-spi:3.11.0 (2 constraints: 6f1e0ab0)
 
-com.palantir.safe-logging:preconditions:3.10.0 (1 constraints: 3605353b)
+com.palantir.safe-logging:preconditions:3.11.0 (1 constraints: 3705383b)
 
-com.palantir.safe-logging:safe-logging:3.10.0 (4 constraints: 3a3454fd)
+com.palantir.safe-logging:safe-logging:3.11.0 (4 constraints: 3e3479fe)
 
 org.jetbrains:annotations:26.0.2 (1 constraints: 36116fd1)
 
