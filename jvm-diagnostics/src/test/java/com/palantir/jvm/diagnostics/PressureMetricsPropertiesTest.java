@@ -23,52 +23,27 @@ import net.jqwik.api.Arbitrary;
 import net.jqwik.api.ForAll;
 import net.jqwik.api.Property;
 import net.jqwik.api.Provide;
-import net.jqwik.api.constraints.DoubleRange;
 
 /**
  * Property-based tests for PSI metrics using jqwik.
  * These tests verify invariants that should hold across all valid inputs.
  */
-class PressureMetricsProperties {
+class PressureMetricsPropertiesTest {
 
-    @Property(tries = 100)
-    void avgPercentagesAlwaysInRange0To100(
-            @ForAll @DoubleRange(min = 0.0, max = 100.0) double avg10,
-            @ForAll @DoubleRange(min = 0.0, max = 100.0) double avg60,
-            @ForAll @DoubleRange(min = 0.0, max = 100.0) double avg300) {
-        // Verify that the percentages we generate are in valid range
-        assertThat(avg10).isBetween(0.0, 100.0);
-        assertThat(avg60).isBetween(0.0, 100.0);
-        assertThat(avg300).isBetween(0.0, 100.0);
-    }
-
-    @Property(tries = 100)
-    void totalMicrosecondsAlwaysNonNegative(@ForAll("validTotalMicroseconds") double total) {
-        // Verify that totals are always non-negative
-        assertThat(total).isGreaterThanOrEqualTo(0.0);
-    }
-
-    @Property(tries = 100)
+    @Property(tries = 10000)
     @SuppressWarnings("StringSplitter") // Test code, validates parsing behavior
     void psiFormatParsingNeverThrows(@ForAll("validPsiLine") String psiLine) {
         // Verify that parsing PSI format never throws exceptions
         // This tests the robustness of the parsing logic
-        try {
-            String[] parts = psiLine.split("\\s+");
-            for (String part : parts) {
-                if (part.contains("=")) {
-                    String[] keyValue = part.split("=", 2);
-                    if (keyValue.length == 2) {
-                        try {
-                            Double.parseDouble(keyValue[1]);
-                        } catch (NumberFormatException e) {
-                            // Expected for some generated inputs
-                        }
-                    }
-                }
+        for (String part : psiLine.split("\\s+")) {
+            if (part.contains("=")) {
+                JvmDiagnostics.parsePressureComponents(part, (key, value) -> {
+                    assertThat(key).isNotNull().isNotEmpty().containsAnyOf("avg10", "avg60", "avg300", "total");
+                    assertThat(value).isNotNull().isNotEmpty().satisfies(v -> assertThat(Double.parseDouble(v))
+                            .isNotNaN());
+                    assertThat(JvmDiagnostics.parseDouble(value)).isNotNull().isNotEmpty();
+                });
             }
-        } catch (Exception e) {
-            throw new AssertionError("Parsing should never throw", e);
         }
     }
 

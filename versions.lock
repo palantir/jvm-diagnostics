@@ -14,6 +14,8 @@ com.palantir.safe-logging:safe-logging:3.11.0 (4 constraints: 3e3479fe)
 
 org.jetbrains:annotations:26.0.2 (1 constraints: 36116fd1)
 
+org.jspecify:jspecify:1.0.0 (6 constraints: 4166fe65)
+
 org.slf4j:slf4j-api:2.0.17 (1 constraints: 471091b6)
 
 
@@ -39,8 +41,6 @@ org.assertj:assertj-core:3.27.7 (1 constraints: 4505553b)
 org.awaitility:awaitility:4.3.0 (1 constraints: 09050836)
 
 org.hamcrest:hamcrest:2.1 (1 constraints: 6f0b2cce)
-
-org.jspecify:jspecify:1.0.0 (6 constraints: 4166fe65)
 
 org.junit.jupiter:junit-jupiter:6.0.2 (1 constraints: 49070b70)
 

@@ -60,7 +60,7 @@ class PressureMetricsTest {
             Optional<PressureMetricsAccessor> accessor = JvmDiagnostics.pressureMetrics();
             assumeThat(accessor).isPresent();
 
-            Optional<CpuPressure> cpuPressure = accessor.get().getCpuPressure();
+            Optional<CpuPressure> cpuPressure = accessor.orElseThrow().getCpuPressure();
 
             assertThat(cpuPressure)
                     .describedAs("CPU pressure should be available")
@@ -90,10 +90,10 @@ class PressureMetricsTest {
             Optional<PressureMetricsAccessor> accessor = JvmDiagnostics.pressureMetrics();
             assumeThat(accessor).isPresent();
 
-            Optional<CpuPressure> cpuPressure = accessor.get().getCpuPressure();
+            Optional<CpuPressure> cpuPressure = accessor.orElseThrow().getCpuPressure();
             assumeThat(cpuPressure).isPresent();
 
-            CpuPressure cpu = cpuPressure.get();
+            CpuPressure cpu = cpuPressure.orElseThrow();
 
             // Percentages should be 0-100
             cpu.someAvg10().ifPresent(value -> assertThat(value)
@@ -121,13 +121,13 @@ class PressureMetricsTest {
             Optional<PressureMetricsAccessor> accessor = JvmDiagnostics.pressureMetrics();
             assumeThat(accessor).isPresent();
 
-            Optional<MemoryPressure> memoryPressure = accessor.get().getMemoryPressure();
+            Optional<MemoryPressure> memoryPressure = accessor.orElseThrow().getMemoryPressure();
 
             assertThat(memoryPressure)
                     .describedAs("Memory pressure should be available")
                     .isPresent();
 
-            MemoryPressure memory = memoryPressure.get();
+            MemoryPressure memory = memoryPressure.orElseThrow();
             assertThat(memory.someAvg10())
                     .describedAs("Memory someAvg10 should be present")
                     .isPresent();
@@ -163,10 +163,10 @@ class PressureMetricsTest {
             Optional<PressureMetricsAccessor> accessor = JvmDiagnostics.pressureMetrics();
             assumeThat(accessor).isPresent();
 
-            Optional<MemoryPressure> memoryPressure = accessor.get().getMemoryPressure();
+            Optional<MemoryPressure> memoryPressure = accessor.orElseThrow().getMemoryPressure();
             assumeThat(memoryPressure).isPresent();
 
-            MemoryPressure memory = memoryPressure.get();
+            MemoryPressure memory = memoryPressure.orElseThrow();
 
             // Percentages should be 0-100
             memory.someAvg10().ifPresent(value -> assertThat(value)
@@ -206,13 +206,13 @@ class PressureMetricsTest {
             Optional<PressureMetricsAccessor> accessor = JvmDiagnostics.pressureMetrics();
             assumeThat(accessor).isPresent();
 
-            Optional<IoPressure> ioPressure = accessor.get().getIoPressure();
+            Optional<IoPressure> ioPressure = accessor.orElseThrow().getIoPressure();
 
             assertThat(ioPressure)
                     .describedAs("I/O pressure should be available")
                     .isPresent();
 
-            IoPressure io = ioPressure.get();
+            IoPressure io = ioPressure.orElseThrow();
             assertThat(io.someAvg10())
                     .describedAs("I/O someAvg10 should be present")
                     .isPresent();
@@ -248,10 +248,10 @@ class PressureMetricsTest {
             Optional<PressureMetricsAccessor> accessor = JvmDiagnostics.pressureMetrics();
             assumeThat(accessor).isPresent();
 
-            Optional<IoPressure> ioPressure = accessor.get().getIoPressure();
+            Optional<IoPressure> ioPressure = accessor.orElseThrow().getIoPressure();
             assumeThat(ioPressure).isPresent();
 
-            IoPressure io = ioPressure.get();
+            IoPressure io = ioPressure.orElseThrow();
 
             // Percentages should be 0-100
             io.someAvg10().ifPresent(value -> assertThat(value)
@@ -292,15 +292,15 @@ class PressureMetricsTest {
             assumeThat(accessor).isPresent();
 
             // Read metrics multiple times
-            Optional<CpuPressure> cpu1 = accessor.get().getCpuPressure();
-            Optional<CpuPressure> cpu2 = accessor.get().getCpuPressure();
+            Optional<CpuPressure> cpu1 = accessor.orElseThrow().getCpuPressure();
+            Optional<CpuPressure> cpu2 = accessor.orElseThrow().getCpuPressure();
 
             assertThat(cpu1).isPresent();
             assertThat(cpu2).isPresent();
 
             // Verify we can read values from both instances
-            OptionalDouble value1 = cpu1.get().someAvg10();
-            OptionalDouble value2 = cpu2.get().someAvg10();
+            OptionalDouble value1 = cpu1.orElseThrow().someAvg10();
+            OptionalDouble value2 = cpu2.orElseThrow().someAvg10();
 
             assertThat(value1).isPresent();
             assertThat(value2).isPresent();

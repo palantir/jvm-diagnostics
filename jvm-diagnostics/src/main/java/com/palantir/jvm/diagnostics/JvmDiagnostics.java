@@ -16,6 +16,7 @@
 
 package com.palantir.jvm.diagnostics;
 
+import com.palantir.logsafe.SafeArg;
 import com.palantir.logsafe.exceptions.SafeRuntimeException;
 import com.palantir.logsafe.logger.SafeLogger;
 import com.palantir.logsafe.logger.SafeLoggerFactory;
@@ -35,9 +36,11 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.OptionalLong;
+import java.util.function.BiConsumer;
 import java.util.function.IntSupplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.jspecify.annotations.Nullable;
 
 /**
  * This utility class provides accessors to individual diagnostic getters. Every method should
@@ -442,16 +445,14 @@ public final class JvmDiagnostics {
             String cgroupPath = detectCgroupPath();
             if (cgroupPath != null) {
                 Path cgroupBase = Paths.get("/sys/fs/cgroup", cgroupPath);
-                cpuPressurePath = tryPath(cgroupBase.resolve("cpu.pressure"), PROC_PRESSURE_CPU);
-                memoryPressurePath = tryPath(cgroupBase.resolve("memory.pressure"), PROC_PRESSURE_MEMORY);
-                ioPressurePath = tryPath(cgroupBase.resolve("io.pressure"), PROC_PRESSURE_IO);
-                log.debug(
-                        "Using container-specific PSI paths",
-                        com.palantir.logsafe.SafeArg.of("cgroupPath", cgroupPath));
+                this.cpuPressurePath = tryPath(cgroupBase.resolve("cpu.pressure"), PROC_PRESSURE_CPU);
+                this.memoryPressurePath = tryPath(cgroupBase.resolve("memory.pressure"), PROC_PRESSURE_MEMORY);
+                this.ioPressurePath = tryPath(cgroupBase.resolve("io.pressure"), PROC_PRESSURE_IO);
+                log.debug("Using container-specific PSI paths", SafeArg.of("cgroupPath", cgroupPath));
             } else {
-                cpuPressurePath = PROC_PRESSURE_CPU;
-                memoryPressurePath = PROC_PRESSURE_MEMORY;
-                ioPressurePath = PROC_PRESSURE_IO;
+                this.cpuPressurePath = PROC_PRESSURE_CPU;
+                this.memoryPressurePath = PROC_PRESSURE_MEMORY;
+                this.ioPressurePath = PROC_PRESSURE_IO;
                 log.debug("Using system-wide PSI paths");
             }
         }
@@ -481,6 +482,7 @@ public final class JvmDiagnostics {
             return Files.isReadable(ioPressurePath) ? Optional.of(new PsiIoPressure(ioPressurePath)) : Optional.empty();
         }
 
+        @Nullable
         private static String detectCgroupPath() {
             if (!Files.isReadable(PROC_SELF_CGROUP)) {
                 return null;
@@ -650,27 +652,32 @@ public final class JvmDiagnostics {
     @SuppressWarnings("StringSplitter") // Pattern.split is appropriate here; Guava is not a dependency
     private static Map<String, String> parsePsiFile(Path path, String linePrefix) {
         Map<String, String> metrics = new HashMap<>();
+        BiConsumer<String, String> metricConsumer = metrics::put;
         try (BufferedReader reader = Files.newBufferedReader(path)) {
             String line;
             while ((line = reader.readLine()) != null) {
                 if (line.startsWith(linePrefix)) {
                     String[] parts = WHITESPACE_PATTERN.split(line);
                     for (int i = 1; i < parts.length; i++) {
-                        String[] keyValue = EQUALS_PATTERN.split(parts[i], 2);
-                        if (keyValue.length == 2) {
-                            metrics.put(keyValue[0], keyValue[1]);
-                        }
+                        parsePressureComponents(parts[i], metricConsumer);
                     }
                     break;
                 }
             }
         } catch (IOException e) {
-            log.debug("Failed to read PSI file", com.palantir.logsafe.SafeArg.of("path", path), e);
+            log.debug("Failed to read PSI file", SafeArg.of("path", path), e);
         }
         return metrics;
     }
 
-    private static OptionalDouble parseDouble(String value) {
+    static void parsePressureComponents(String input, BiConsumer<String, String> metricConsumer) {
+        String[] keyValue = EQUALS_PATTERN.split(input, 2);
+        if (keyValue.length == 2) {
+            metricConsumer.accept(keyValue[0], keyValue[1]);
+        }
+    }
+
+    static OptionalDouble parseDouble(String value) {
         if (value == null) {
             return OptionalDouble.empty();
         }
