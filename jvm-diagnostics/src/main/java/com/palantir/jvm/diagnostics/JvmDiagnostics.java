@@ -19,15 +19,25 @@ package com.palantir.jvm.diagnostics;
 import com.palantir.logsafe.exceptions.SafeRuntimeException;
 import com.palantir.logsafe.logger.SafeLogger;
 import com.palantir.logsafe.logger.SafeLoggerFactory;
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.management.ManagementFactory;
 import java.lang.management.PlatformManagedObject;
 import java.lang.reflect.Method;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
+import java.util.OptionalDouble;
 import java.util.OptionalLong;
 import java.util.function.IntSupplier;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * This utility class provides accessors to individual diagnostic getters. Every method should
@@ -161,6 +171,28 @@ public final class JvmDiagnostics {
             return accessor.isEnabled() ? Optional.of(accessor) : Optional.empty();
         } catch (Throwable t) {
             log.debug("Failed to create a HotspotVirtualThreadSchedulerAccessor", t);
+            return Optional.empty();
+        }
+    }
+
+    /**
+     * Returns a {@link PressureMetricsAccessor} which provides access to Linux Pressure Stall Information (PSI)
+     * metrics. This functionality is only available on Linux systems with PSI support (kernel 4.20+).
+     *
+     * The accessor automatically detects container environments and prefers container-specific metrics when
+     * available, falling back to system-wide metrics otherwise.
+     *
+     * The resulting instance should be reused rather than calling this factory each time a value is needed.
+     *
+     * @return a PSI metrics accessor, or empty if PSI is not available
+     * @see <a href="https://docs.kernel.org/accounting/psi.html">Linux PSI Documentation</a>
+     */
+    public static Optional<PressureMetricsAccessor> pressureMetrics() {
+        try {
+            LinuxPressureMetricsAccessor accessor = new LinuxPressureMetricsAccessor();
+            return accessor.isEnabled() ? Optional.of(accessor) : Optional.empty();
+        } catch (Throwable t) {
+            log.debug("Failed to create a LinuxPressureMetricsAccessor", t);
             return Optional.empty();
         }
     }
@@ -392,6 +424,260 @@ public final class JvmDiagnostics {
             } catch (Throwable t) {
                 throw new SafeRuntimeException("failed to invoke VirtualThreadSchedulerMXBean#setParallelism", t);
             }
+        }
+    }
+
+    private static final class LinuxPressureMetricsAccessor implements PressureMetricsAccessor {
+        private static final Pattern CGROUP_V2_PATTERN = Pattern.compile("0::(.+)");
+        private static final Path PROC_SELF_CGROUP = Paths.get("/proc/self/cgroup");
+        private static final Path PROC_PRESSURE_CPU = Paths.get("/proc/pressure/cpu");
+        private static final Path PROC_PRESSURE_MEMORY = Paths.get("/proc/pressure/memory");
+        private static final Path PROC_PRESSURE_IO = Paths.get("/proc/pressure/io");
+
+        private final Path cpuPressurePath;
+        private final Path memoryPressurePath;
+        private final Path ioPressurePath;
+
+        LinuxPressureMetricsAccessor() {
+            String cgroupPath = detectCgroupPath();
+            if (cgroupPath != null) {
+                Path cgroupBase = Paths.get("/sys/fs/cgroup", cgroupPath);
+                cpuPressurePath = tryPath(cgroupBase.resolve("cpu.pressure"), PROC_PRESSURE_CPU);
+                memoryPressurePath = tryPath(cgroupBase.resolve("memory.pressure"), PROC_PRESSURE_MEMORY);
+                ioPressurePath = tryPath(cgroupBase.resolve("io.pressure"), PROC_PRESSURE_IO);
+                log.debug(
+                        "Using container-specific PSI paths",
+                        com.palantir.logsafe.SafeArg.of("cgroupPath", cgroupPath));
+            } else {
+                cpuPressurePath = PROC_PRESSURE_CPU;
+                memoryPressurePath = PROC_PRESSURE_MEMORY;
+                ioPressurePath = PROC_PRESSURE_IO;
+                log.debug("Using system-wide PSI paths");
+            }
+        }
+
+        boolean isEnabled() {
+            return Files.isReadable(cpuPressurePath)
+                    || Files.isReadable(memoryPressurePath)
+                    || Files.isReadable(ioPressurePath);
+        }
+
+        @Override
+        public Optional<CpuPressure> getCpuPressure() {
+            return Files.isReadable(cpuPressurePath)
+                    ? Optional.of(new PsiCpuPressure(cpuPressurePath))
+                    : Optional.empty();
+        }
+
+        @Override
+        public Optional<MemoryPressure> getMemoryPressure() {
+            return Files.isReadable(memoryPressurePath)
+                    ? Optional.of(new PsiMemoryPressure(memoryPressurePath))
+                    : Optional.empty();
+        }
+
+        @Override
+        public Optional<IoPressure> getIoPressure() {
+            return Files.isReadable(ioPressurePath) ? Optional.of(new PsiIoPressure(ioPressurePath)) : Optional.empty();
+        }
+
+        private static String detectCgroupPath() {
+            if (!Files.isReadable(PROC_SELF_CGROUP)) {
+                return null;
+            }
+
+            try (BufferedReader reader = Files.newBufferedReader(PROC_SELF_CGROUP)) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    Matcher matcher = CGROUP_V2_PATTERN.matcher(line);
+                    if (matcher.matches()) {
+                        return matcher.group(1);
+                    }
+                }
+            } catch (IOException e) {
+                log.debug("Failed to read cgroup info", e);
+            }
+            return null;
+        }
+
+        private static Path tryPath(Path containerPath, Path systemPath) {
+            return Files.isReadable(containerPath) ? containerPath : systemPath;
+        }
+    }
+
+    private static final class PsiCpuPressure implements CpuPressure {
+        private final Path path;
+
+        PsiCpuPressure(Path path) {
+            this.path = path;
+        }
+
+        @Override
+        public OptionalDouble someAvg10() {
+            return readMetric("some", "avg10");
+        }
+
+        @Override
+        public OptionalDouble someAvg60() {
+            return readMetric("some", "avg60");
+        }
+
+        @Override
+        public OptionalDouble someAvg300() {
+            return readMetric("some", "avg300");
+        }
+
+        @Override
+        public OptionalDouble someTotal() {
+            return readMetric("some", "total");
+        }
+
+        private OptionalDouble readMetric(String linePrefix, String metricName) {
+            Map<String, String> metrics = parsePsiFile(path, linePrefix);
+            return parseDouble(metrics.get(metricName));
+        }
+    }
+
+    private static final class PsiMemoryPressure implements MemoryPressure {
+        private final Path path;
+
+        PsiMemoryPressure(Path path) {
+            this.path = path;
+        }
+
+        @Override
+        public OptionalDouble someAvg10() {
+            return readMetric("some", "avg10");
+        }
+
+        @Override
+        public OptionalDouble someAvg60() {
+            return readMetric("some", "avg60");
+        }
+
+        @Override
+        public OptionalDouble someAvg300() {
+            return readMetric("some", "avg300");
+        }
+
+        @Override
+        public OptionalDouble someTotal() {
+            return readMetric("some", "total");
+        }
+
+        @Override
+        public OptionalDouble fullAvg10() {
+            return readMetric("full", "avg10");
+        }
+
+        @Override
+        public OptionalDouble fullAvg60() {
+            return readMetric("full", "avg60");
+        }
+
+        @Override
+        public OptionalDouble fullAvg300() {
+            return readMetric("full", "avg300");
+        }
+
+        @Override
+        public OptionalDouble fullTotal() {
+            return readMetric("full", "total");
+        }
+
+        private OptionalDouble readMetric(String linePrefix, String metricName) {
+            Map<String, String> metrics = parsePsiFile(path, linePrefix);
+            return parseDouble(metrics.get(metricName));
+        }
+    }
+
+    private static final class PsiIoPressure implements IoPressure {
+        private final Path path;
+
+        PsiIoPressure(Path path) {
+            this.path = path;
+        }
+
+        @Override
+        public OptionalDouble someAvg10() {
+            return readMetric("some", "avg10");
+        }
+
+        @Override
+        public OptionalDouble someAvg60() {
+            return readMetric("some", "avg60");
+        }
+
+        @Override
+        public OptionalDouble someAvg300() {
+            return readMetric("some", "avg300");
+        }
+
+        @Override
+        public OptionalDouble someTotal() {
+            return readMetric("some", "total");
+        }
+
+        @Override
+        public OptionalDouble fullAvg10() {
+            return readMetric("full", "avg10");
+        }
+
+        @Override
+        public OptionalDouble fullAvg60() {
+            return readMetric("full", "avg60");
+        }
+
+        @Override
+        public OptionalDouble fullAvg300() {
+            return readMetric("full", "avg300");
+        }
+
+        @Override
+        public OptionalDouble fullTotal() {
+            return readMetric("full", "total");
+        }
+
+        private OptionalDouble readMetric(String linePrefix, String metricName) {
+            Map<String, String> metrics = parsePsiFile(path, linePrefix);
+            return parseDouble(metrics.get(metricName));
+        }
+    }
+
+    private static final Pattern WHITESPACE_PATTERN = Pattern.compile("\\s+");
+    private static final Pattern EQUALS_PATTERN = Pattern.compile("=");
+
+    @SuppressWarnings("StringSplitter") // Pattern.split is appropriate here; Guava is not a dependency
+    private static Map<String, String> parsePsiFile(Path path, String linePrefix) {
+        Map<String, String> metrics = new HashMap<>();
+        try (BufferedReader reader = Files.newBufferedReader(path)) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (line.startsWith(linePrefix)) {
+                    String[] parts = WHITESPACE_PATTERN.split(line);
+                    for (int i = 1; i < parts.length; i++) {
+                        String[] keyValue = EQUALS_PATTERN.split(parts[i], 2);
+                        if (keyValue.length == 2) {
+                            metrics.put(keyValue[0], keyValue[1]);
+                        }
+                    }
+                    break;
+                }
+            }
+        } catch (IOException e) {
+            log.debug("Failed to read PSI file", com.palantir.logsafe.SafeArg.of("path", path), e);
+        }
+        return metrics;
+    }
+
+    private static OptionalDouble parseDouble(String value) {
+        if (value == null) {
+            return OptionalDouble.empty();
+        }
+        try {
+            return OptionalDouble.of(Double.parseDouble(value));
+        } catch (NumberFormatException e) {
+            return OptionalDouble.empty();
         }
     }
 }
