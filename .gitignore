@@ -35,3 +35,6 @@ out/
 
 # Gradle JDKs setup
 !gradle/*
+
+.claude
+.jqwik-database
