@@ -1,5 +1,0 @@
-type: improvement
-improvement:
-  description: 'Add `Add-Exports: java.management/sun.management` to the jar manifest'
-  links:
-  - https://github.com/palantir/jvm-diagnostics/pull/62
