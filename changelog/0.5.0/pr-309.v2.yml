@@ -1,5 +1,0 @@
-type: improvement
-improvement:
-  description: Implement DnsCacheTtl accessors
-  links:
-  - https://github.com/palantir/jvm-diagnostics/pull/309
